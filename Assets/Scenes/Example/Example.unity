@@ -257,9 +257,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7443408887813606050, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
+      propertyPath: _spawnablePrefabs
+      value: 
+      objectReference: {fileID: 11400000, guid: ec64eb18c93ab344892891f33edbf82a, type: 2}
     - target: {fileID: 7443408887813606051, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
       propertyPath: m_Name
       value: NetworkManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 7443408887813606060, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
+      propertyPath: _addToDefaultScene
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
@@ -288,6 +296,22 @@ MonoBehaviour:
   _maximumClients: 4095
   _clientAddress: localhost
   _timeout: 15
+--- !u!114 &1561559624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1561559622}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57ce8bbb58966cb45a7140f32da5327a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _startInOffline: 1
+  _offlineScene: 
+  _onlineScene: 
+  _replaceScenes: 0
 --- !u!1 &1775174008
 GameObject:
   m_ObjectHideFlags: 0
