@@ -7,12 +7,14 @@ public class PlayerPattern : MonoBehaviour
     public Rigidbody2D rbd;
     public float speedFactor;
     private float vx, vy;
+    private float ax;
     
     // Start is called before the first frame update
     void Start()
     {
         vx = 0;
         vy = 0;
+        ax = 0;
         rbd = this.GetComponent<Rigidbody2D>();
 
     }
