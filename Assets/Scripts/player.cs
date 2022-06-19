@@ -3,20 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using WeaponSystem;
 
-public class player : MonoBehaviour
+public class Player : MonoBehaviour
 {
     public Weapon weapon;
-    // Start is called before the first frame update
-    void Start()
-    {
-        this.weapon = WeaponFactory
-            .Create(WeaponFactory.Type.Pistols)
-            .GetWeapon("FiveSeven");
-    }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        weapon.Fire();
+        if (Input.GetMouseButtonDown(0)) this.weapon.Fire();
     }
 }
