@@ -14,22 +14,41 @@ public struct MapToLoad
 public class PopulateMapView : MonoBehaviour
 {
     public MapToLoad[] maps;
+    public MapToLoad mapSelected;
+
+    private MapPrefabsItem[] mapsToLoadObjects;
     public GameObject prefabsToAdd;
     public RectTransform contentContainer;
 
+
     void Start()
     {
-        for(int i = 0; i < maps.Length; i++)
+        mapsToLoadObjects = new MapPrefabsItem[maps.Length];
+        for (int i = 0; i < maps.Length; i++)
         {
             GameObject obj = Instantiate(prefabsToAdd);
-            prefabsToAdd.GetComponent<MapPrefabsItem>().InitMapItem(maps[i].name, maps[i].description, maps[i].image, maps[i].loadName,maps[i]);
+            mapsToLoadObjects[i] = obj.GetComponent<MapPrefabsItem>();
+            mapsToLoadObjects[i].InitMapItem(maps[i].name, maps[i].description, maps[i].image, maps[i].loadName,maps[i],this);
+            
             obj.transform.SetParent(contentContainer);
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    public void UnselectMap()
     {
-        
+        foreach(MapPrefabsItem mapPrefabsItem in mapsToLoadObjects)
+        {
+            mapPrefabsItem.UnSelect();
+        }
+        if(maps.Length > 0)
+        {
+            mapSelected = maps[0];
+        }
+    }
+
+    public void SelectMap(MapPrefabsItem mapToSelect)
+    {
+        UnselectMap();
+        mapSelected = mapToSelect.Select();
     }
 }

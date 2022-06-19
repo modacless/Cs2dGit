@@ -7,29 +7,45 @@ using UnityEngine.Events;
 
 public class MapPrefabsItem : MonoBehaviour
 {
-    // Start is called before the first frame update
+    //Data show by gameObject
     public TMP_Text textName;
     public TMP_Text textDescription;
     public Button buttonSelect;
     public Image image;
     public string loadName;
-
     public GameObject selectedUi;
 
+    public PopulateMapView mapView;
+
+    //Usefull data 
     MapToLoad data;
-    public void InitMapItem(string name, string desc, Sprite sprite, string loadName, MapToLoad data )
+
+    public void InitMapItem(string name, string desc, Sprite sprite, string loadName, MapToLoad data, PopulateMapView view  )
     {
+        selectedUi.SetActive(false);
         this.data = data;
         this.loadName = loadName;
+        mapView = view;
         textName.text = name;
         textDescription.text = desc;
         if(sprite != null)
             image.sprite = sprite;
     }
 
-    public void BindButton()
+    public MapToLoad Select()
     {
-        selectedUi.SetActive(selectedUi.activeSelf);
+        selectedUi.SetActive(true);
+        return data;
+    }
+
+    public void UnSelect()
+    {
+        selectedUi.SetActive(false);
+    }
+
+    public void OnPressedSelect()
+    {
+        mapView.SelectMap(this);
     }
 
 }

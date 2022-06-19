@@ -28,7 +28,7 @@ public class MenuBehaviour : MonoBehaviour
     {
         
     }
-
+    #region Main Menu Button
     public void OnPressedHost()
     {
         ChangeSceneMenu("HostMenu");
@@ -55,6 +55,17 @@ public class MenuBehaviour : MonoBehaviour
         ChangeSceneMenu("StartMenu");
     }
 
+    #endregion
+
+    #region Host Parameter && Button
+    public void OnPressedStartHost()
+    {
+
+    }
+
+    #endregion
+
+
     void ChangeSceneMenu(string nameOfScene)
     {
         foreach (string name in sceneMenuSort.Keys)
@@ -68,13 +79,6 @@ public class MenuBehaviour : MonoBehaviour
                 sceneMenuSort[name].SetActive(false);
             }
         }
-    }
-
-    //Host Menu
-
-    public void MapSelection()
-    {
-
     }
 
 }
