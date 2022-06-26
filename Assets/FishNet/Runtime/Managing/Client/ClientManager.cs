@@ -200,8 +200,8 @@ namespace FishNet.Managing.Client
         /// <param name="args"></param>
         private void Transport_OnClientConnectionState(ClientConnectionStateArgs args)
         {
-            LocalConnectionStates state = args.ConnectionState;
-            Started = (state == LocalConnectionStates.Started);
+            LocalConnectionState state = args.ConnectionState;
+            Started = (state == LocalConnectionState.Started);
             Objects.OnClientConnectionState(args);
 
             //Clear connection after so objects can update using current Connection value.
@@ -251,6 +251,10 @@ namespace FishNet.Managing.Client
         /// </summary>
         private void ParseReceived(ClientReceivedDataArgs args)
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            _parseLogger.Reset();
+#endif
+
             ArraySegment<byte> segment = args.Data;
             if (segment.Count <= TransportManager.TICK_BYTES)
                 return;

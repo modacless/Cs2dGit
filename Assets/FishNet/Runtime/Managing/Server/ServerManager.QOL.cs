@@ -26,14 +26,14 @@ namespace FishNet.Managing.Server
                 foreach (Transport t in mp.Transports)
                 {
                     //Another transport is started, no need to load start scenes again.
-                    if (t.GetConnectionState(true) == LocalConnectionStates.Started)
+                    if (t.GetConnectionState(true) == LocalConnectionState.Started)
                         startedCount++;
                 }
             }
             //Not using multipass.
             else
             {
-                if (tm.Transport.GetConnectionState(true) == LocalConnectionStates.Started)
+                if (tm.Transport.GetConnectionState(true) == LocalConnectionState.Started)
                     startedCount = 1;
             }
 
@@ -61,14 +61,14 @@ namespace FishNet.Managing.Server
                     if (t == excludedTransport)
                         continue;
                     //Another transport is started, no need to load start scenes again.
-                    if (t.GetConnectionState(true) == LocalConnectionStates.Started)
+                    if (t.GetConnectionState(true) == LocalConnectionState.Started)
                         return true;
                 }
             }
             //Not using multipass.
             else
             {
-                return (tm.Transport.GetConnectionState(true) == LocalConnectionStates.Started);
+                return (tm.Transport.GetConnectionState(true) == LocalConnectionState.Started);
             }
 
             //Fall through, none started.
@@ -102,7 +102,8 @@ namespace FishNet.Managing.Server
         /// </summary>
         /// <param name="nob">MetworkObject instance to spawn.</param>
         /// <param name="ownerConnection">Connection to give ownership to.</param>
-        public void Spawn(NetworkObject nob, NetworkConnection ownerConnection = null)
+        /// <param name="synchronizeParent">True to synchronize the parent object in the spawn message. The parent must have a NetworkObject or NetworkBehaviour component for this to work.</param>
+        public void Spawn(NetworkObject nob, NetworkConnection ownerConnection = null, bool synchronizeParent = true)
         {
             if (!CanSpawnOrDespawn(true))
                 return;
@@ -113,7 +114,7 @@ namespace FishNet.Managing.Server
                 return;
             }
 
-            Objects.Spawn(nob, ownerConnection);
+            Objects.Spawn(nob, ownerConnection, synchronizeParent);
         }
 
 

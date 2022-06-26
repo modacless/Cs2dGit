@@ -119,23 +119,13 @@ namespace FishNet.Object
             private set { _owner = value; }
         }
         /// <summary>
-        /// True if there is an owner.
-        /// </summary>
-        [Obsolete("Use Owner.IsValid instead.")] //Remove on 2022/06/01
-        public bool OwnerIsValid => (Owner == null) ? false : Owner.IsValid;
-        /// <summary>
-        /// True if there is an owner and their connect is active. This will return false if there is no owner, or if the connection is disconnecting.
-        /// </summary>
-        [Obsolete("Use Owner.IsValid instead.")] //Remove on 2022/06/01
-        public bool OwnerIsActive => (Owner == null) ? false : Owner.IsActive;
-        /// <summary>
         /// ClientId for this NetworkObject owner.
         /// </summary>
         public int OwnerId => (!Owner.IsValid) ? -1 : Owner.ClientId;
         /// <summary>
         /// True if the object is initialized for the network.
         /// </summary>
-        public bool IsSpawned => (!Deinitializing && ObjectId >= 0);
+        public bool IsSpawned => (!IsDeinitializing && ObjectId >= 0);
         /// <summary>
         /// The local connection of the client calling this method.
         /// </summary>
@@ -218,7 +208,7 @@ namespace FishNet.Object
                         Debug.LogWarning($"Cannot despawn {gameObject.name}, NetworkManager reference is null. This may occur if the object is not spawned or initialized.");
                 }
             }
-            else if (Deinitializing)
+            else if (IsDeinitializing)
             {
                 canExecute = false;
                 if (warn)

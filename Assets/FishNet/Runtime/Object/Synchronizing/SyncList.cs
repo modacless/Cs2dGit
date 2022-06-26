@@ -188,18 +188,15 @@ namespace FishNet.Object.Synchronizing
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddOperation(SyncListOperation operation, int index, T prev, T next)
         {
-            /* Only check this if NetworkManager is set.
-             * It may not be set if results are being populated
-             * before initialization. */
-            if (base.NetworkManager == null)
+            if (!base.IsRegistered)
                 return;
 
-            if (base.Settings.WritePermission == WritePermission.ServerOnly && !base.NetworkManager.IsServer)
+            if (base.NetworkManager != null && base.Settings.WritePermission == WritePermission.ServerOnly && !base.NetworkBehaviour.IsServer)
             {
                 if (NetworkManager.CanLog(LoggingType.Warning))
-                    Debug.LogWarning($"Cannot complete operation {operation} as server when server is not active.");
+                    Debug.LogWarning($"Cannot complete operation as server when server is not active.");
                 return;
-            }
+            } 
 
             /* Set as changed even if cannot dirty.
             * Dirty is only set when there are observers,
@@ -250,6 +247,8 @@ namespace FishNet.Object.Synchronizing
         public override void WriteDelta(PooledWriter writer, bool resetSyncTick = true)
         {
             base.WriteDelta(writer, resetSyncTick);
+            //False for not full write.
+            writer.WriteBoolean(false);
             writer.WriteUInt32((uint)_changed.Count);
 
             for (int i = 0; i < _changed.Count; i++)
@@ -286,6 +285,8 @@ namespace FishNet.Object.Synchronizing
                 return;
 
             base.WriteHeader(writer, false);
+            //True for full write.
+            writer.WriteBoolean(true);
             writer.WriteUInt32((uint)Collection.Count);
             for (int i = 0; i < Collection.Count; i++)
             {
@@ -309,6 +310,11 @@ namespace FishNet.Object.Synchronizing
             * and potentially overwrite data not yet sent. */
             bool asClientAndHost = (!asServer && base.NetworkManager.IsServer);
             IList<T> collection = (asClientAndHost) ? ClientHostCollection : Collection;
+
+            //Clear collection since it's a full write.
+            bool fullWrite = reader.ReadBoolean();
+            if (fullWrite)
+                collection.Clear();
 
             int changes = (int)reader.ReadUInt32();
             for (int i = 0; i < changes; i++)

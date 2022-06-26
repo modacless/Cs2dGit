@@ -8,6 +8,7 @@ using FishNet.Utility;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using FishNet.Utility.Performance;
+using System;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -23,10 +24,17 @@ namespace FishNet.Object
         /// </summary>
         internal bool ActiveDuringEdit;
         /// <summary>
+        /// True to synchronize the parent of this object during the spawn message.
+        /// </summary>
+        internal bool SynchronizeParent;
+        /// <summary>
         /// Returns if this object was placed in the scene during edit-time.
         /// </summary>
         /// <returns></returns>
-        public bool SceneObject => (SceneId > 0);
+        public bool IsSceneObject => (SceneId > 0);
+        [Obsolete("Use IsSceneObject instead.")] //Remove on 2023/01/01
+        public bool SceneObject => IsSceneObject;
+
         /// <summary>
         /// Unique Id for this NetworkObject. This does not represent the object owner.
         /// </summary>
@@ -34,7 +42,7 @@ namespace FishNet.Object
         /// <summary>
         /// True if this NetworkObject is deinitializing. Will also be true until Initialize is called. May be false until the object is cleaned up if object is destroyed without using Despawn.
         /// </summary>
-        internal bool Deinitializing { get; private set; } = true;
+        internal bool IsDeinitializing { get; private set; } = true;
         /// <summary>
         /// 
         /// </summary>
@@ -71,10 +79,10 @@ namespace FishNet.Object
             private set => _isNetworked = value;
         }
         /// <summary>
-        /// Sets IsNetworked value.
+        /// Sets IsNetworked value. This method must be called before Start.
         /// </summary>
         /// <param name="isNetworked"></param>
-        internal void SetIsNetworked(bool isNetworked)
+        public void SetIsNetworked(bool isNetworked)
         {
             IsNetworked = isNetworked;
         }
@@ -110,7 +118,7 @@ namespace FishNet.Object
             if (NetworkManager == null || (!NetworkManager.IsClient && !NetworkManager.IsServer))
             {
                 //ActiveDuringEdit is only used for scene objects.
-                if (SceneObject)
+                if (IsSceneObject)
                     ActiveDuringEdit = true;
                 gameObject.SetActive(false);
             }
@@ -120,7 +128,7 @@ namespace FishNet.Object
         {
             /* If deinitializing and an owner exist
              * then remove object from owner. */
-            if (Deinitializing && Owner.IsValid)
+            if (IsDeinitializing && Owner.IsValid)
                 Owner.RemoveObject(this);
         }
 
@@ -130,7 +138,7 @@ namespace FishNet.Object
             if (Owner.IsValid)
                 Owner.RemoveObject(this);
             //Already being deinitialized by FishNet.
-            if (Deinitializing)
+            if (IsDeinitializing)
                 return;
 
             //Was destroyed without going through the proper methods.
@@ -160,7 +168,7 @@ namespace FishNet.Object
                 Owner.RemoveObject(this);
 
             Observers.Clear();
-            Deinitializing = true;
+            IsDeinitializing = true;
 
             SetActiveStatus(false, true);
             SetActiveStatus(false, false);
@@ -182,9 +190,9 @@ namespace FishNet.Object
         /// </summary>
         /// <param name="networkManager"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void InitializeOnceInternal(NetworkManager networkManager, int objectId, NetworkConnection owner, bool asServer)
+        internal void PreinitializeInternal(NetworkManager networkManager, int objectId, NetworkConnection owner, bool synchronizeParent, bool asServer)
         {
-            Deinitializing = false;
+            IsDeinitializing = false;
             //QOL references.
             NetworkManager = networkManager;
             ServerManager = networkManager.ServerManager;
@@ -194,6 +202,7 @@ namespace FishNet.Object
             SceneManager = networkManager.SceneManager;
             RollbackManager = networkManager.RollbackManager;
 
+            SynchronizeParent = synchronizeParent;
             SetOwner(owner);
             ObjectId = objectId;
 
@@ -257,13 +266,13 @@ namespace FishNet.Object
             InvokeStopCallbacks(asServer);
             if (asServer)
             {
-                Deinitializing = true;
+                IsDeinitializing = true;
             }
             else
             {
                 //Client only.
                 if (!NetworkManager.IsServer)
-                    Deinitializing = true;
+                    IsDeinitializing = true;
 
                 RemoveClientRpcLinkIndexes();
             }
@@ -359,7 +368,7 @@ namespace FishNet.Object
             if (asServer)
             {
                 if (activeNewOwner)
-                    NetworkManager.ServerManager.Objects.RebuildObservers(this, newOwner);
+                    ServerManager.Objects.RebuildObservers(this, newOwner);
 
                 using (PooledWriter writer = WriterPool.GetWriter())
                 {
@@ -382,7 +391,7 @@ namespace FishNet.Object
                 }
 
                 if (prevOwner.IsActive)
-                    RebuildObservers(prevOwner, false);
+                    ServerManager.Objects.RebuildObservers(prevOwner);
             }
         }
 

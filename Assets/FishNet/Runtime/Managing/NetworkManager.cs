@@ -20,6 +20,9 @@ using FishNet.Managing.Debugging;
 using FishNet.Managing.Object;
 using FishNet.Transporting;
 using FishNet.Utility.Extension;
+#if UNITY_EDITOR
+using FishNet.Editing.PrefabCollectionGenerator;
+#endif
 
 namespace FishNet.Managing
 {
@@ -61,6 +64,10 @@ namespace FishNet.Managing
         #endregion
 
         #region Public.
+        /// <summary>
+        /// True if this instance of the NetworkManager is initialized.
+        /// </summary>
+        public bool Initialized { get; private set; }
         /// <summary>
         /// 
         /// </summary>
@@ -183,26 +190,6 @@ namespace FishNet.Managing
         [Tooltip("How to persist when other NetworkManagers are introduced.")]
         [SerializeField]
         private PersistenceType _persistence = PersistenceType.DestroyNewest;
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        //[Tooltip("Whether client or server should iterate incoming data first when running as host.")]
-        //[SerializeField]
-        //private HostIterationOrder _incomingIterationOrder = HostIterationOrder.ClientFirst;
-        ///// <summary>
-        ///// Whether client or server should iterate incoming data first when running as host.
-        ///// </summary>
-        //internal HostIterationOrder IncomingIterationOrder => _incomingIterationOrder;
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        //[Tooltip("Whether client or server should iterate outgoing data first when running as host.")]
-        //[SerializeField]
-        //private HostIterationOrder _outgoingIterationOrder = HostIterationOrder.ServerFirst;
-        ///// <summary>
-        ///// Whether client or server should iterate incoming data first when running as host.
-        ///// </summary>
-        //internal HostIterationOrder OutgoingIterationOrder => _outgoingIterationOrder;
         #endregion
 
         #region Private.
@@ -236,11 +223,15 @@ namespace FishNet.Managing
              * cloning tools sometimes don't synchronize
              * scriptable object changes, which is what
              * the default prefabs is. */
-            if (_refreshDefaultPrefabs && SpawnablePrefabs != null && SpawnablePrefabs is DefaultPrefabObjects dpo)
+            if (_instances.Count == 0 && SpawnablePrefabs != null && SpawnablePrefabs is DefaultPrefabObjects dpo)
             {
-                DefaultPrefabObjects.CanAutomate = false;
-                dpo.PopulateDefaultPrefabs(false);
-                DefaultPrefabObjects.CanAutomate = true;
+                if (_refreshDefaultPrefabs)
+                {
+                    Generator.IgnorePostProcess = true;
+                    Debug.Log("DefaultPrefabCollection is being refreshed.");
+                    Generator.GenerateFull();
+                    Generator.IgnorePostProcess = false;
+                }
             }
 #endif
 
@@ -267,7 +258,11 @@ namespace FishNet.Managing
             InitializeComponents();
 
             _instances.Add(this);
+            Initialized = true;
+        }
 
+        private void Start()
+        {
             ServerManager.StartForHeadless();
         }
 

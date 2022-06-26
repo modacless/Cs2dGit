@@ -4,13 +4,17 @@ using UnityEngine;
 using TMPro;
 using FishNet.Object;
 using FishNet;
-
+using FishNet.Transporting.Tugboat;
+using UnityEngine.SceneManagement;
+using System;
 
 public class MenuBehaviour : MonoBehaviour
 {
     public List<GameObject> sceneMenu;
     public Dictionary<string, GameObject> sceneMenuSort = new Dictionary<string, GameObject>();
-    public MapToLoad mapToLoad;
+
+    [SerializeField]
+    private TMP_InputField inputIp;
 
     // Start is called before the first frame update
     void Start()
@@ -36,8 +40,12 @@ public class MenuBehaviour : MonoBehaviour
 
     public void OnPressedJoin()
     {
+
+        string sceneToUnload = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+
+        InstanceFinder.TransportManager.Transport.SetClientAddress(inputIp.text);
         InstanceFinder.ClientManager.StartConnection();
-        //Récupération de l'id de la map puis chargement.
+
     }
 
     public void OnPressedSettings()
@@ -53,14 +61,6 @@ public class MenuBehaviour : MonoBehaviour
     public void OnPressedMenu()
     {
         ChangeSceneMenu("StartMenu");
-    }
-
-    #endregion
-
-    #region Host Parameter && Button
-    public void OnPressedStartHost()
-    {
-
     }
 
     #endregion

@@ -85,6 +85,10 @@ namespace FishNet.Connection
         /// </summary>
         public bool Disconnecting { get; private set; }
         /// <summary>
+        /// Tick when Disconnecting was set.
+        /// </summary>
+        internal uint DisconnectingTick { get; private set; }
+        /// <summary>
         /// Custom data associated with this connection which may be modified by the user.
         /// The value of this field are not synchronized over the network.
         /// </summary>
@@ -94,7 +98,10 @@ namespace FishNet.Connection
         #region Comparers.
         public override bool Equals(object obj)
         {
-            return this.Equals(obj as NetworkConnection);
+            if (obj is NetworkConnection nc)
+                return (nc.ClientId == this.ClientId);
+            else
+                return false;
         }
         public bool Equals(NetworkConnection nc)
         {
@@ -103,6 +110,7 @@ namespace FishNet.Connection
             //If either is -1 Id.
             if (this.ClientId == -1 || nc.ClientId == -1)
                 return false;
+            //Same object.
             if (System.Object.ReferenceEquals(this, nc))
                 return true;
 
@@ -169,6 +177,8 @@ namespace FishNet.Connection
         internal void SetDisconnecting(bool value)
         {
             Disconnecting = value;
+            if (Disconnecting)
+                DisconnectingTick = NetworkManager.TimeManager.LocalTick;
         }
 
         /// <summary>

@@ -56,7 +56,7 @@ public class DefaultScene : MonoBehaviour
     private void OnDestroy()
     {
 
-        if (!ApplicationState.IsQuitting() && _networkManager != null)
+        if (!ApplicationState.IsQuitting() && _networkManager != null && _networkManager.Initialized)
         {
             _networkManager.ClientManager.OnClientConnectionState -= ClientManager_OnClientConnectionState;
             _networkManager.ServerManager.OnServerConnectionState -= ServerManager_OnServerConnectionState;
@@ -76,6 +76,9 @@ public class DefaultScene : MonoBehaviour
                 Debug.LogError($"NetworkManager not found on {gameObject.name} or any parent objects. DefaultScene will not work.");
             return;
         }
+        //A NetworkManager won't be initialized if it's being destroyed.
+        if (!_networkManager.Initialized)
+            return;
         if (_onlineScene == string.Empty || _offlineScene == string.Empty)
         {
             if (_networkManager.CanLog(LoggingType.Warning))
@@ -118,7 +121,7 @@ public class DefaultScene : MonoBehaviour
         /* When server starts load online scene as global.
          * Since this is a global scene clients will automatically
          * join it when connecting. */
-        if (obj.ConnectionState == LocalConnectionStates.Started)
+        if (obj.ConnectionState == LocalConnectionState.Started)
         {
             /* If not exactly one server is started then
              * that means either none are started, which isnt true because
@@ -134,7 +137,7 @@ public class DefaultScene : MonoBehaviour
             _networkManager.SceneManager.LoadGlobalScenes(sld);
         }
         //When server stops load offline scene.
-        else if (obj.ConnectionState == LocalConnectionStates.Stopped)
+        else if (obj.ConnectionState == LocalConnectionState.Stopped)
         {
             LoadOfflineScene();
         }
@@ -145,7 +148,7 @@ public class DefaultScene : MonoBehaviour
     /// </summary>
     private void ClientManager_OnClientConnectionState(ClientConnectionStateArgs obj)
     {
-        if (obj.ConnectionState == LocalConnectionStates.Stopped)
+        if (obj.ConnectionState == LocalConnectionState.Stopped)
         {
             //Only load offline scene if not also server.
             if (!_networkManager.IsServer)

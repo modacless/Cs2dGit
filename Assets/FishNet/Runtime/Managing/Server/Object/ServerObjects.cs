@@ -114,7 +114,7 @@ namespace FishNet.Managing.Server
         {
 
             //If server just connected.
-            if (args.ConnectionState == LocalConnectionStates.Started)
+            if (args.ConnectionState == LocalConnectionState.Started)
             {
                 /* If there's no servers started besides the one
                  * that just started then build Ids and setup scene objects. */
@@ -292,7 +292,7 @@ namespace FishNet.Managing.Server
             {
                 NetworkObject nob = nobs.Collection[i];
                 //Only setup if a scene object and not initialzied.
-                if (nob.SceneObject && nob.Deinitializing)
+                if (nob.IsNetworked && nob.IsSceneObject && nob.IsDeinitializing)
                 {
                     base.UpdateNetworkBehaviours(nob, true);
                     base.AddToSceneObjects(nob);
@@ -318,13 +318,12 @@ namespace FishNet.Managing.Server
         /// <summary>
         /// Performs setup on a NetworkObject without synchronizing the actions to clients.
         /// </summary>
-        /// <param name="nob"></param>
-        private void SetupWithoutSynchronization(NetworkObject nob, NetworkConnection ownerConnection = null)
+        private void SetupWithoutSynchronization(NetworkObject nob, NetworkConnection ownerConnection = null, bool synchronizeParent = true)
         {
             if (nob.IsNetworked)
             {
                 int objectId = GetNextNetworkObjectId();
-                nob.InitializeOnceInternal(NetworkManager, objectId, ownerConnection, true);
+                nob.PreinitializeInternal(NetworkManager, objectId, ownerConnection, synchronizeParent, true);
                 base.AddToSpawned(nob, true);
                 nob.gameObject.SetActive(true);
                 nob.Initialize(true);
@@ -337,7 +336,7 @@ namespace FishNet.Managing.Server
         /// Spawns an object over the network.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void Spawn(NetworkObject networkObject, NetworkConnection ownerConnection = null)
+        internal void Spawn(NetworkObject networkObject, NetworkConnection ownerConnection = null, bool synchronizeParent = true)
         {
             if (!NetworkManager.ServerManager.Started)
             {
@@ -369,20 +368,20 @@ namespace FishNet.Managing.Server
                 return;
             }
 
-            SpawnWithoutChecks(networkObject, ownerConnection);
+            SpawnWithoutChecks(networkObject, ownerConnection, synchronizeParent);
         }
 
         /// <summary>
         /// Spawns networkObject without any checks.
         /// </summary>
-        private void SpawnWithoutChecks(NetworkObject networkObject, NetworkConnection ownerConnection = null)
+        private void SpawnWithoutChecks(NetworkObject networkObject, NetworkConnection ownerConnection = null, bool synchronizeParent = true)
         {
             /* Setup locally without sending to clients.
             * When observers are built for the network object
             * during initialization spawn messages will
             * be sent. */
             networkObject.SetIsNetworked(true);
-            SetupWithoutSynchronization(networkObject, ownerConnection);
+            SetupWithoutSynchronization(networkObject, ownerConnection, synchronizeParent);
             //Also rebuild observers for the object so it spawns for others.
             RebuildObservers(networkObject);
 
@@ -427,7 +426,7 @@ namespace FishNet.Managing.Server
 
             /* Write if a scene object or not, and also
              * store sceneObjectId if is a scene object. */
-            bool sceneObject = nob.SceneObject;
+            bool sceneObject = nob.IsSceneObject;
             headerWriter.WriteBoolean(sceneObject);
             /* Writing a scene object. */
             if (sceneObject)
@@ -452,6 +451,70 @@ namespace FishNet.Managing.Server
             /* Writing a spawned object. */
             else
             {
+                //Check to write parent behaviour or nob.
+                NetworkBehaviour parentNb = null;
+                Transform t = nob.transform.parent;
+                if (t != null)
+                {
+                    parentNb = t.GetComponent<NetworkBehaviour>();
+                    /* Check for a NetworkObject if there is no NetworkBehaviour.
+                     * There is a small chance the parent object will only contain
+                     * a NetworkObject. */
+                    if (parentNb == null)
+                    {
+                        //If null check if there is a nob.
+                        NetworkObject parentNob = t.GetComponent<NetworkObject>();
+                        //ParentNob is null or not spawned.
+                        if (!ParentIsSpawned(parentNob))
+                        { 
+                            headerWriter.WriteByte((byte)SpawnParentType.Unset);
+                        }
+                        else
+                        { 
+                            headerWriter.WriteByte((byte)SpawnParentType.NetworkObject);
+                            headerWriter.WriteNetworkObject(parentNob);
+                        }
+                    }
+                    //NetworkBehaviour found on parent.
+                    else
+                    {
+                        //ParentNb is null or not spawned.
+                        if (!ParentIsSpawned(parentNb.NetworkObject))
+                        {
+                            headerWriter.WriteByte((byte)SpawnParentType.Unset);
+                        }
+                        else
+                        {
+                            headerWriter.WriteByte((byte)SpawnParentType.NetworkBehaviour);
+                            headerWriter.WriteNetworkBehaviour(parentNb);
+                        }
+                    }
+
+                    //True if pNob is not null, and is spawned.
+                    bool ParentIsSpawned(NetworkObject pNob)
+                    {
+                        bool isNull = (pNob == null);
+                        if (isNull || !pNob.IsSpawned)
+                        {
+                            /* Only log if pNob exist. Otherwise this would print if the user 
+                             * was parenting any object, which may not be desirable as they could be
+                             * simply doing it for organization reasons. */
+                            if (!isNull && base.NetworkManager.CanLog(LoggingType.Warning))
+                                Debug.LogWarning($"Parent {t.name} is not spawned. {nob.name} will not have it's parent sent in the spawn message.");
+                            return false;
+                        }
+
+                        return true;
+                    }
+
+                }
+                //No parent.
+                else
+                {
+                    headerWriter.WriteByte((byte)SpawnParentType.Unset);
+                }
+
+
                 headerWriter.WriteInt16(nob.PrefabId);
                 /* //muchlater Write only properties that are different
                  * from the prefab. Odds are position will be changed,
@@ -508,10 +571,18 @@ namespace FishNet.Managing.Server
         /// <summary>
         /// Tries to removes objectId from PendingDestroy and returns if successful.
         /// </summary>
-        /// <param name="objectId"></param>
         internal bool RemoveFromPending(int objectId)
         {
             return _pendingDestroy.Remove(objectId);
+        }
+        /// <summary>
+        /// Returns a NetworkObject in PendingDestroy.
+        /// </summary>
+        internal NetworkObject GetFromPending(int objectId)
+        {
+            NetworkObject nob;
+            _pendingDestroy.TryGetValue(objectId, out nob);
+            return nob;
         }
         /// <summary>
         /// Destroys NetworkObjects pending for destruction.
@@ -575,7 +646,7 @@ namespace FishNet.Managing.Server
             ArraySegment<byte> despawnSegment = everyoneWriter.GetArraySegment();
 
             //Add observers to a list cache.
-            ListCache<NetworkConnection> cache = ListCaches.NetworkConnectionCache;
+            ListCache<NetworkConnection> cache = ListCaches.GetNetworkConnectionCache();
             cache.Reset();
             cache.AddValues(nob.Observers);
             int written = cache.Written;
@@ -590,6 +661,7 @@ namespace FishNet.Managing.Server
             }
 
             everyoneWriter.Dispose();
+            ListCaches.StoreCache(cache);
         }
         /// <summary>
         /// Writes a despawn.

@@ -94,7 +94,7 @@ namespace FishNet.Observing
         }
         private void OnDisable()
         {
-            if (_networkObject != null && _networkObject.Deinitializing)
+            if (_networkObject != null && _networkObject.IsDeinitializing)
                 UnregisterTimedConditions();
         }
         private void OnDestroy()
@@ -188,6 +188,7 @@ namespace FishNet.Observing
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal ObserverStateChange RebuildObservers(NetworkConnection connection, bool timedOnly)
         {
+            timedOnly = false;
             bool currentlyAdded = (_networkObject.Observers.Contains(connection));
 
             //True if all conditions are met.

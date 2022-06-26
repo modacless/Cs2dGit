@@ -14,12 +14,11 @@ public struct MapToLoad
 public class PopulateMapView : MonoBehaviour
 {
     public MapToLoad[] maps;
-    public MapToLoad mapSelected;
+    public static MapToLoad mapSelected;
 
     private MapPrefabsItem[] mapsToLoadObjects;
     public GameObject prefabsToAdd;
     public RectTransform contentContainer;
-
 
     void Start()
     {
@@ -50,5 +49,6 @@ public class PopulateMapView : MonoBehaviour
     {
         UnselectMap();
         mapSelected = mapToSelect.Select();
+        HostSettings.gameSettings.map = mapSelected;
     }
 }

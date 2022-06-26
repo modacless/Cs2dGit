@@ -21,7 +21,9 @@ namespace FishNet.Object
         /// <summary>
         /// True if the NetworkObject for this NetworkBehaviour is deinitializing.
         /// </summary>
-        public bool Deinitializing => _networkObjectCache.Deinitializing;
+        public bool IsDeinitializing => _networkObjectCache.IsDeinitializing;
+        [Obsolete("Use IsDeinitializing instead.")]
+        public bool Deinitializing => IsDeinitializing; //Remove on 2023/01/01.
         /// <summary>
         /// NetworkManager for this object.
         /// </summary>
@@ -97,17 +99,6 @@ namespace FishNet.Object
                 return _networkObjectCache.Owner;
             }
         }
-        /// <summary>
-        /// True if there is an owner.
-        /// </summary>
-        /// </summary>
-        [Obsolete("Use Owner.IsValid instead.")] //Remove on 2022/06/01
-        public bool OwnerIsValid => _networkObjectCache.OwnerIsValid;
-        /// <summary>
-        /// True if there is an owner and their connect is active. This will return false if there is no owner, or if the connection is disconnecting.
-        /// </summary>
-        [Obsolete("Use Owner.IsActive instead.")] //Remove on 2022/06/01
-        public bool OwnerIsActive => _networkObjectCache.OwnerIsActive;
         /// <summary>
         /// ClientId for this NetworkObject owner.
         /// </summary>
