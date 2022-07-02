@@ -2,8 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using FishNet;
+using FishNet.Object;
 
-public class PlayerControl : MonoBehaviour
+public class PlayerControl : NetworkBehaviour
 {
     //Références
     [SerializeField]
@@ -21,15 +23,22 @@ public class PlayerControl : MonoBehaviour
 
     void Update()
     {
-        InputManager();
-        Vector2 inputMovement = new Vector2(right - left, up - down);
-        Debug.Log(right);
-        rb.velocity = inputMovement * playerData.speed * Time.deltaTime;
+        if (IsOwner)
+        {
+            InputManager();
+        }
     }
 
     void FixedUpdate()
     {
-
+        if (IsOwner)
+        {
+            Debug.Log(playerData.rotationCamera);
+            Vector2 inputMovementH = Quaternion.Euler(playerData.rotationCamera) * Vector2.right * (right - left);
+            Vector2 inputMovementV = Quaternion.Euler(playerData.rotationCamera) * Vector2.up * (up - down);
+            Vector2 inputMovement = inputMovementH + inputMovementV;
+            rb.velocity = inputMovement * playerData.speed * Time.fixedTime;
+        }
     }
     #endregion
 

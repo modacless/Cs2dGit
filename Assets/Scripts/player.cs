@@ -7,6 +7,6 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0)) Weapon.GetComponent<Weapon>().Fire();
+        //if (Input.GetMouseButtonDown(0)) Weapon.GetComponent<Weapon>().Fire();
     }
 }

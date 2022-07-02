@@ -1,18 +1,36 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using FishNet.Object;
 
-public class PlayerRotation : MonoBehaviour
+public class PlayerRotation : NetworkBehaviour
 {
-    // Start is called before the first frame update
+    //Références
+    [SerializeField]
+    private ScriptablePlayerData playerData;
+    [SerializeField]
+    private Camera cameraPlayer;
+    [SerializeField]
+    private GameObject bodyObject;
+    [SerializeField]
+    private GameObject legsObject;
+
     void Start()
     {
         
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
+        if (IsOwner)
+        {
+            Vector3 difference = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
+            difference.Normalize();
+            float rotation_z = Mathf.Atan2(difference.y, difference.x) * Mathf.Rad2Deg;
+            bodyObject.transform.rotation = Quaternion.Euler(0f, 0f, rotation_z + 90f);
+            
+        }
+
     }
+
 }

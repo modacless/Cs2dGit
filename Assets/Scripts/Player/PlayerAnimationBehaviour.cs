@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Events;
+using FishNet.Object;
 
 public enum BodyAnimation
 {
@@ -18,7 +18,7 @@ public enum LegsAnimation
     Run
 }
 
-public class PlayerAnimationBehaviour : MonoBehaviour
+public class PlayerAnimationBehaviour : NetworkBehaviour
 {
     //Références
     [SerializeField]
@@ -66,13 +66,19 @@ public class PlayerAnimationBehaviour : MonoBehaviour
 
     private void Update()
     {
-        if (IsMooving())
+        if (IsOwner)
         {
-            legsAnimation = LegsAnimation.Run;
-        }
-        else
-        {
-            legsAnimation = LegsAnimation.Idle;
+            if (IsMooving())
+            {
+                bodyAnimation = BodyAnimation.Run;
+                legsAnimation = LegsAnimation.Run;
+            }
+            else
+            {
+                bodyAnimation = BodyAnimation.Idle;
+                legsAnimation = LegsAnimation.Idle;
+            }
+
         }
 
     }

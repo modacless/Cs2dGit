@@ -12,8 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2c5ed1be5d579843933c7b1358405ac, type: 3}
   m_Name: PlayerData
   m_EditorClassIdentifier: 
+  bodyObject: {fileID: 0}
+  legsObject: {fileID: 0}
+  rotationCameraTransform: {fileID: 0}
+  rotationCamera: {x: 0, y: 0, z: -35.099995}
   leftKey: 113
   rightKey: 100
   upKey: 122
   downKey: 115
-  speed: 500
+  rotateRCamera: 97
+  rotateLCamera: 101
+  reloadKey: 0
+  speed: 0.05
+  rotateCameraSpeed: 45
