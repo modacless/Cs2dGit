@@ -7,7 +7,7 @@ using FishNet.Object;
 public enum WeaponType
 {
     Pistol,
-
+    Rifle,
 }
 
 public enum WeaponState
@@ -15,6 +15,13 @@ public enum WeaponState
     InHand,
     OnGround,
     Reload
+}
+
+public enum WeaponTypeInHand
+{
+    Primary,
+    Secondary,
+    Accessory
 }
 
 public abstract class Weapon : NetworkBehaviour, IShootable
@@ -45,6 +52,8 @@ public abstract class Weapon : NetworkBehaviour, IShootable
         }
     }
 
+    public WeaponTypeInHand weaponTypeInHand;
+
     //Reload data
 
     [SerializeField]
@@ -70,11 +79,15 @@ public abstract class Weapon : NetworkBehaviour, IShootable
     private void Start()
     {
         weaponSpriteRenderer = GetComponent<SpriteRenderer>();
+        GetComponent<SpriteRenderer>().enabled = false;
     }
 
     public override void OnStartClient()
     {
         base.OnStartClient();
+
+        transform.localRotation = Quaternion.identity;
+        transform.localPosition = Vector3.zero;
     }
 
     #region Shoot
@@ -174,6 +187,13 @@ public abstract class Weapon : NetworkBehaviour, IShootable
                 weaponSpriteRenderer.sprite = weaponReload;
                 break;
         }
+    }
+
+    public void HideWeapon(bool onOff)
+    {
+        Debug.Log("Hide + " + onOff);
+        gameObject.SetActive(onOff);
+        GetComponent<SpriteRenderer>().enabled = onOff;
     }
 
     #endregion

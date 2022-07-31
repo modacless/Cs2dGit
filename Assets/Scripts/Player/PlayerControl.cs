@@ -33,11 +33,10 @@ public class PlayerControl : NetworkBehaviour
     {
         if (IsOwner)
         {
-            Debug.Log(playerData.rotationCamera);
             Vector2 inputMovementH = Quaternion.Euler(playerData.rotationCamera) * Vector2.right * (right - left);
             Vector2 inputMovementV = Quaternion.Euler(playerData.rotationCamera) * Vector2.up * (up - down);
             Vector2 inputMovement = inputMovementH + inputMovementV;
-            rb.velocity = inputMovement * playerData.speed * Time.fixedTime;
+            rb.velocity = inputMovement * playerData.speed * Time.fixedDeltaTime;
         }
     }
     #endregion

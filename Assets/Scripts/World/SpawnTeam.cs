@@ -20,7 +20,7 @@ public class SpawnTeam : MonoBehaviour
         float newX = Random.Range(transform.position.x - squareWidthSpawn, transform.position.x + squareWidthSpawn);
         float newY = Random.Range(transform.position.y - squareHeightSpawn, transform.position.y + squareHeightSpawn);
 
-        return new Vector3(newX, newY, 0);
+        return new Vector3(0, 0, 0);
     }
 
     private void OnDrawGizmosSelected()

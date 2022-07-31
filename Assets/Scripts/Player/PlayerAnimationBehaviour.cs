@@ -1,4 +1,4 @@
-using System.Collections;
+    using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -10,6 +10,7 @@ public enum BodyAnimation
     Run,
     HoldPistol,
     HoldShootgun,
+    HoldRifle,
 }
 
 public enum LegsAnimation
@@ -22,15 +23,14 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
 {
     //Références
     [SerializeField]
+    private ScriptablePlayerData playerData;
+    [SerializeField]
     private Animator bodyAnimator;
     [SerializeField]
     private Animator legsAnimator;
 
     private Rigidbody2D rbd;
     
-    //Data
-    public static BodyAnimation bd;
-
     //Get setter, change animation
     private BodyAnimation _bodyAnimation;
     public BodyAnimation bodyAnimation
@@ -68,14 +68,35 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
     {
         if (IsOwner)
         {
-            if (IsMooving())
+
+            if(playerData.actualPlayerWeapon != null)
             {
-                bodyAnimation = BodyAnimation.Run;
-                legsAnimation = LegsAnimation.Run;
+                switch (playerData.actualPlayerWeapon.weaponType)
+                {
+                    case WeaponType.Pistol:
+                        bodyAnimation = BodyAnimation.HoldPistol;
+                        break;
+                    case WeaponType.Rifle:
+                        bodyAnimation = BodyAnimation.HoldRifle;
+                        break;
+                    default:
+                        break;
+                }
             }
             else
             {
                 bodyAnimation = BodyAnimation.Idle;
+            }
+
+            if (IsMooving())
+            {
+                if(playerData.actualPlayerWeapon == null)
+                    bodyAnimation = BodyAnimation.Run;
+
+                legsAnimation = LegsAnimation.Run;
+            }
+            else
+            {
                 legsAnimation = LegsAnimation.Idle;
             }
 
@@ -112,6 +133,9 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
                 SetAnimation(bodyAnimator, "HoldPistol", true);
                 break;
             case BodyAnimation.HoldShootgun:
+                break;
+            case BodyAnimation.HoldRifle:
+                SetAnimation(bodyAnimator,"HoldRifle", true);
                 break;
             default:
                 break;

@@ -104,6 +104,7 @@ MonoBehaviour:
   bulletInstance: {fileID: 8107380527561293861}
   spawnPoint: {fileID: 3503048337991387436}
   weaponType: 0
+  weaponTypeInHand: 1
   maxBullet: 13
   maxTimeToReload: 1
   inHandWeaponSprite: {fileID: 21300000, guid: 754a8a689d6ed264e87f956ddf7de4bd, type: 3}
@@ -122,7 +123,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   NetworkObserver: {fileID: 0}
-  _prefabId: -1
+  _prefabId: 1
   _scenePathHash: 0
   _sceneId: 0
   _sceneNetworkObjects: []

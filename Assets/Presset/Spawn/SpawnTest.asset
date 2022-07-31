@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4489d77032a81ef42b0067acf2737d4d, type: 3}
+  m_Name: SpawnTest
+  m_EditorClassIdentifier: 
+  _prefabs:
+  - {fileID: 6743577648286833928, guid: d51649c186c9e1b44a995d49a584d0b5, type: 3}
+  - {fileID: 2659528010684068566, guid: 0dd26a737a45bde44871cd06fdb0b219, type: 3}
+  - {fileID: 4660177777919862586, guid: 554cb3034d342654fa3d3cd5cf567693, type: 3}

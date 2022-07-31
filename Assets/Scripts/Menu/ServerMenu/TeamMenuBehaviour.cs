@@ -54,7 +54,7 @@ public class TeamMenuBehaviour : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void RpcPressedTerrorist(NetworkConnection clientConnection)
+    public void RpcPressedTerrorist(NetworkConnection clientConnection = null)
     {
         terroristTeam.Add(CreatePlayer(clientConnection, terroristSpawn.SpawnPosition()));
     }
@@ -66,7 +66,7 @@ public class TeamMenuBehaviour : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void RpcPressedAntiTerrorist(NetworkConnection clientConnection)
+    public void RpcPressedAntiTerrorist(NetworkConnection clientConnection = null)
     {
         antiterroristTeam.Add(CreatePlayer(clientConnection, antiterroristSpawn.SpawnPosition()));
     }

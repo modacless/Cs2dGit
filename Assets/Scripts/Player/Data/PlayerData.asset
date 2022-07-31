@@ -12,16 +12,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2c5ed1be5d579843933c7b1358405ac, type: 3}
   m_Name: PlayerData
   m_EditorClassIdentifier: 
-  bodyObject: {fileID: 0}
-  legsObject: {fileID: 0}
   rotationCameraTransform: {fileID: 0}
-  rotationCamera: {x: 0, y: 0, z: -35.099995}
+  rotationCamera: {x: 0, y: 0, z: 0}
+  actualPlayerWeapon: {fileID: 0}
   leftKey: 113
   rightKey: 100
   upKey: 122
   downKey: 115
+  primaryWeaponInventory: 49
+  secondaryWeaponInventory: 50
+  accessoryWeaponInventory: 51
   rotateRCamera: 97
   rotateLCamera: 101
-  reloadKey: 0
-  speed: 0.05
+  reloadKey: 114
+  speed: 50
   rotateCameraSpeed: 45
+  allweapon:
+  - name: Bereta
+    weapon: {fileID: 787389083896037526, guid: 0dd26a737a45bde44871cd06fdb0b219, type: 3}
+  - name: Ak47
+    weapon: {fileID: 7974065617147237754, guid: 554cb3034d342654fa3d3cd5cf567693, type: 3}
