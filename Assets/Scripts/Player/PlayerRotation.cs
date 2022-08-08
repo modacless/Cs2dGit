@@ -17,14 +17,16 @@ public class PlayerRotation : NetworkBehaviour
     private GameObject legsObject;
 
 
+    private PlayerLife playerLife;
+
     void Start()
     {
-        
+        playerLife = GetComponent<PlayerLife>();
     }
 
     void Update()
     {
-        if (IsOwner)
+        if (IsOwner && playerLife.playerHp > 0)
         {
             Vector3 difference = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
             difference.Normalize();

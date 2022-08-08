@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using FishNet.Object.Synchronizing;
 
-[CreateAssetMenu(menuName = "Player/Data",fileName ="Data",order = 0)]
+[CreateAssetMenu(menuName = "Player/Data", fileName = "Data", order = 0)]
 public class ScriptablePlayerData : ScriptableObject
 {
 
@@ -26,19 +26,27 @@ public class ScriptablePlayerData : ScriptableObject
     public KeyCode secondaryWeaponInventory;
     public KeyCode accessoryWeaponInventory;
 
+    public KeyCode openStoreUi;
+
     //Camera
     public KeyCode rotateRCamera;
     public KeyCode rotateLCamera;
 
     //Weapon
     public KeyCode reloadKey;
-    
+    [Range(0, 3)]
+    public int mouseShootButton;
+
     [Header("Player Data")]
+    public int playerLifePoint = 100;
     public float speed;
 
     [Header("Camera Data")]
     //Rotate speed in degres per s
     public float rotateCameraSpeed;
+
+    [Header("Respawn")]
+    public float timeToRespawn;
 
     public AllWeapon[] allweapon;
     public static Dictionary<string, GameObject> allWeaponDictionary = new Dictionary<string, GameObject>();

@@ -11,12 +11,16 @@ public enum BodyAnimation
     HoldPistol,
     HoldShootgun,
     HoldRifle,
+    ReloadPistol,
+    ReloadRifle,
+    Die
 }
 
 public enum LegsAnimation
 {
     Idle,
-    Run
+    Run,
+    Die
 }
 
 public class PlayerAnimationBehaviour : NetworkBehaviour
@@ -28,6 +32,8 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
     private Animator bodyAnimator;
     [SerializeField]
     private Animator legsAnimator;
+
+    private PlayerLife playerLife;
 
     private Rigidbody2D rbd;
     
@@ -47,7 +53,7 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
     }
 
     private LegsAnimation _legsAnimation;
-    public  LegsAnimation legsAnimation
+    public  LegsAnimation leggsAnimation
     {
         get { return _legsAnimation; }
         set
@@ -62,10 +68,18 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
     private void Start()
     {
         rbd = GetComponent<Rigidbody2D>();
+        playerLife = GetComponent<PlayerLife>();
     }
 
     private void Update()
     {
+        if (IsDie())
+        {
+            bodyAnimation = BodyAnimation.Die;
+            leggsAnimation = LegsAnimation.Die;
+            return;
+        }
+
         if (IsOwner)
         {
 
@@ -74,10 +88,25 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
                 switch (playerData.actualPlayerWeapon.weaponType)
                 {
                     case WeaponType.Pistol:
-                        bodyAnimation = BodyAnimation.HoldPistol;
+                        if (playerData.actualPlayerWeapon.isRealoading)
+                        {
+                            bodyAnimation = BodyAnimation.ReloadPistol;
+                        }
+                        else
+                        {
+                            bodyAnimation = BodyAnimation.HoldPistol;
+                        }
+                        
                         break;
                     case WeaponType.Rifle:
-                        bodyAnimation = BodyAnimation.HoldRifle;
+                        if (playerData.actualPlayerWeapon.isRealoading)
+                        {
+                            bodyAnimation = BodyAnimation.ReloadRifle;
+                        }
+                        else
+                        {
+                            bodyAnimation = BodyAnimation.HoldRifle;
+                        }
                         break;
                     default:
                         break;
@@ -93,14 +122,15 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
                 if(playerData.actualPlayerWeapon == null)
                     bodyAnimation = BodyAnimation.Run;
 
-                legsAnimation = LegsAnimation.Run;
+                leggsAnimation = LegsAnimation.Run;
             }
             else
             {
-                legsAnimation = LegsAnimation.Idle;
+                leggsAnimation = LegsAnimation.Idle;
             }
 
         }
+        
 
     }
 
@@ -114,6 +144,15 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
         }
 
         return true;
+    }
+
+    private bool IsDie()
+    {
+        if(playerLife.playerHp < 0)
+        {
+            return true;
+        }
+        return false;
     }
 
     #endregion
@@ -132,10 +171,21 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
             case BodyAnimation.HoldPistol:
                 SetAnimation(bodyAnimator, "HoldPistol", true);
                 break;
+            case BodyAnimation.ReloadPistol:
+                SetAnimation(bodyAnimator, "IsReloading", true);
+                bodyAnimator.SetBool("HoldPistol", true);
+                break;
             case BodyAnimation.HoldShootgun:
                 break;
             case BodyAnimation.HoldRifle:
                 SetAnimation(bodyAnimator,"HoldRifle", true);
+                break;
+            case BodyAnimation.ReloadRifle:
+                SetAnimation(bodyAnimator, "IsReloading", true);
+                bodyAnimator.SetBool("HoldRifle", true);
+                break;
+            case BodyAnimation.Die:
+                SetAnimation(bodyAnimator, "Die", true);
                 break;
             default:
                 break;
@@ -144,13 +194,16 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
 
     private void SetLegsAnimation()
     {
-        switch (legsAnimation)
+        switch (leggsAnimation)
         {
             case LegsAnimation.Idle:
                 SetAnimation(legsAnimator, "WalkLegs", false);
                 break;
             case LegsAnimation.Run:
                 SetAnimation(legsAnimator, "WalkLegs", true);
+                break;
+            case LegsAnimation.Die:
+                SetAnimation(legsAnimator, "Die", true);
                 break;
             default:
                 break;

@@ -11,6 +11,7 @@ public class PlayerControl : NetworkBehaviour
     [SerializeField]
     private ScriptablePlayerData playerData;
     private Rigidbody2D rb;
+    private PlayerLife playerLife;
     //Data
     //Input var
     private int left, right, up, down;
@@ -19,6 +20,7 @@ public class PlayerControl : NetworkBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        playerLife = GetComponent<PlayerLife>();
     }
 
     void Update()
@@ -31,7 +33,7 @@ public class PlayerControl : NetworkBehaviour
 
     void FixedUpdate()
     {
-        if (IsOwner)
+        if (IsOwner && playerLife.playerHp > 0)
         {
             Vector2 inputMovementH = Quaternion.Euler(playerData.rotationCamera) * Vector2.right * (right - left);
             Vector2 inputMovementV = Quaternion.Euler(playerData.rotationCamera) * Vector2.up * (up - down);

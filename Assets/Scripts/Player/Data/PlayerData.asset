@@ -22,11 +22,16 @@ MonoBehaviour:
   primaryWeaponInventory: 49
   secondaryWeaponInventory: 50
   accessoryWeaponInventory: 51
+  openStoreUi: 98
   rotateRCamera: 97
   rotateLCamera: 101
   reloadKey: 114
+  mouseShootButton: 0
+  actualPlayerLifePoint: 100
+  playerLifePoint: 100
   speed: 50
   rotateCameraSpeed: 45
+  timeToRespawn: 0
   allweapon:
   - name: Bereta
     weapon: {fileID: 787389083896037526, guid: 0dd26a737a45bde44871cd06fdb0b219, type: 3}

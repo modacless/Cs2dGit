@@ -2,19 +2,25 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using FishNet.Object;
+using FishNet.Transporting;
 
 public interface IShootable 
 {
 
     //Shoot
-    public void ServerRpcShoot();
-    public void ClientRpcShoot();
-    public void InstantiateBullet();
+    public void RaycastShoot();
     public void Shoot();
+    public void ServerRpcImpact(Vector3 position, Quaternion rotation);
+
+    public void ObserverRpcImpact(Vector3 position, Quaternion rotation);
 
     //Reload
     public void Reload();
-    public void ServerRpcReload();
-    public void ClientRpcReload(double time);
+    public IEnumerator ReloadManager(double time);
+
+    //Spread
+    public void UpdateSpread();
+    public void DecraseSpread();
+
 
 }

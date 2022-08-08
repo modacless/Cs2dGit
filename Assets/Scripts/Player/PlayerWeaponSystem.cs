@@ -4,6 +4,7 @@ using UnityEngine;
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
 using FishNet.Transporting;
+using FishNet.Connection;
 
 [System.Serializable]
 public struct InventoryWeapon
@@ -22,54 +23,64 @@ public class PlayerWeaponSystem : NetworkBehaviour
     [SerializeField]
     private ScriptablePlayerData playerData;
 
+    private PlayerLife playerLife;
+
     //Sync data
     [SyncObject]
     public readonly SyncList<InventoryWeapon> inventoryPlayerWeapon = new SyncList<InventoryWeapon>();
-    [SyncVar]
-    public int money;
+    private InventoryWeapon mainInventory;
+    private InventoryWeapon SecondInventory;
+    private InventoryWeapon AccesInventory;
 
     [SyncVar] public int inventorySelection;
 
     //Data
     private delegate void EndSpawn(Weapon wepeaonToWait);
 
+    private void Start()
+    {
+        playerLife = GetComponent<PlayerLife>();
+    }
+
     // Start is called before the first frame update
     public override void OnStartClient()
     {
         base.OnStartClient();
 
-            //Init Delegate
+        //Init Inventory;
+        playerData.actualPlayerWeapon = null;
+        mainInventory = new InventoryWeapon();
+        mainInventory.Init(null, WeaponTypeInHand.Primary);
+        SecondInventory = new InventoryWeapon();
+        SecondInventory.Init(null, WeaponTypeInHand.Secondary);
+        AccesInventory = new InventoryWeapon();
+        AccesInventory.Init(null, WeaponTypeInHand.Accessory);
 
-            //Init Inventory;
-            playerData.actualPlayerWeapon = null;
-            InventoryWeapon mainInventory = new InventoryWeapon();
-            mainInventory.Init(null, WeaponTypeInHand.Primary);
-            InventoryWeapon SecondInventory = new InventoryWeapon();
-            SecondInventory.Init(null, WeaponTypeInHand.Secondary);
-            InventoryWeapon AccesInventory = new InventoryWeapon();
-            AccesInventory.Init(null, WeaponTypeInHand.Accessory);
-
-            inventoryPlayerWeapon.Add(mainInventory);
-            inventoryPlayerWeapon.Add(SecondInventory);
-            inventoryPlayerWeapon.Add(AccesInventory);
-
-        //Init all Weapon
-
-        if (IsOwner)
+        if(ScriptablePlayerData.allWeaponDictionary.Count != playerData.allweapon.Length)
         {
-            
             foreach (AllWeapon weapon in playerData.allweapon)
             {
+
                 ScriptablePlayerData.allWeaponDictionary.Add(weapon.name, weapon.weapon);
             }
         }
-  
     }
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+
+        //Add on Server cause sync list
+        inventoryPlayerWeapon.Add(mainInventory);
+        inventoryPlayerWeapon.Add(SecondInventory);
+        inventoryPlayerWeapon.Add(AccesInventory);
+
+    }
+
 
     // Update is called once per frame
     void Update()
     {
-        if (IsOwner)
+        if (IsOwner && playerLife.playerHp > 0)
         {
             //Check mosue wheel
             if(Input.GetAxis("Mouse ScrollWheel") > 0 || Input.GetAxis("Mouse ScrollWheel") < 0)
@@ -97,6 +108,22 @@ public class PlayerWeaponSystem : NetworkBehaviour
             {
                 RpcAddInInventory("Ak47");
             }
+
+            if (Input.GetMouseButton(playerData.mouseShootButton) && playerData.actualPlayerWeapon != null)
+            {
+                playerData.actualPlayerWeapon.Shoot();
+            }
+
+            if (!Input.GetMouseButton(playerData.mouseShootButton) && playerData.actualPlayerWeapon != null)
+            {
+                playerData.actualPlayerWeapon.DecraseSpread();
+            }
+
+            if (Input.GetKeyDown(playerData.reloadKey) && playerData.actualPlayerWeapon != null)
+            {
+                playerData.actualPlayerWeapon.Reload();
+            }
+
         }
     }
 
@@ -192,7 +219,7 @@ public class PlayerWeaponSystem : NetworkBehaviour
     #region Add Weapon in inventory
 
     [ServerRpc(RequireOwnership = false)]
-    public void RpcAddInInventory(string weaponName)
+    public void RpcAddInInventory(string weaponName, NetworkConnection conn = null)
     {
         if(weaponName == string.Empty)
         {
@@ -220,7 +247,7 @@ public class PlayerWeaponSystem : NetworkBehaviour
 
                 //Spawn weapon
                 GameObject weaponToSpawn = Instantiate(weaponToAdd.gameObject,new Vector3(0,0,0),Quaternion.identity,transform.Find("BodySprite"));
-                base.Spawn(weaponToSpawn,ClientManager.Connection);
+                base.Spawn(weaponToSpawn, conn);
                 //weaponToSpawn.transform.position = new Vector3(0, 0, 0);
                 ClientRpcEndSpawnWeapon(weaponToSpawn.GetComponent<Weapon>(), i);
 
@@ -252,7 +279,6 @@ public class PlayerWeaponSystem : NetworkBehaviour
     {
         weapontToSpawn.HideWeapon(false);
         yield return new WaitUntil(delegate () {
-            Debug.Log(weapontToSpawn.IsSpawned);
             return weapontToSpawn.IsSpawned;
         });
 

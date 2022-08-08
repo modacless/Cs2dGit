@@ -105,8 +105,20 @@ MonoBehaviour:
   spawnPoint: {fileID: 3503048337991387436}
   weaponType: 0
   weaponTypeInHand: 1
+  bulletSpeed: 40
+  fireRate: 0.4
+  range: 500
+  damage: 25
+  canShootRate: 1
+  impactPoint: {fileID: 0}
+  trailImpact: {fileID: 0}
   maxBullet: 13
   maxTimeToReload: 1
+  isRealoading: 0
+  timeToStartSpread: 0.8
+  timeToStartMaxSpread: 2
+  minAngleSpread: 5
+  maxAngleSpread: 20
   inHandWeaponSprite: {fileID: 21300000, guid: 754a8a689d6ed264e87f956ddf7de4bd, type: 3}
   weaponSprite: {fileID: 21300000, guid: fb13ce5dd6c57c7428a0a4ccf376b75d, type: 3}
   weaponReload: {fileID: 21300000, guid: 6526b11b705149c42a8e7d2da5499cf8, type: 3}
@@ -134,6 +146,7 @@ MonoBehaviour:
     Rotation: {x: 0, y: 0, z: 0, w: 1}
     LocalScale: {x: 1, y: 1, z: 1}
   _isNetworked: 1
+  _isGlobal: 0
   _hasParentNetworkObjectAtEdit: 0
 --- !u!1 &8107380527561293861
 GameObject:

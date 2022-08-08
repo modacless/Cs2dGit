@@ -12,7 +12,7 @@ GameObject:
   m_Layer: 0
   m_Name: BulletSpawnEmplacement
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 7174288486110832750, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -24,7 +24,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1497446874157061577}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.025, y: -0.189, z: 0}
+  m_LocalPosition: {x: -0.069, y: -0.373, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 7974065617147237756}
@@ -42,6 +42,7 @@ GameObject:
   - component: {fileID: 7974065617147237757}
   - component: {fileID: 4212210900036897752}
   - component: {fileID: 4660177777919862586}
+  - component: {fileID: 2758948249791804254}
   m_Layer: 0
   m_Name: Ak-47
   m_TagString: Untagged
@@ -131,15 +132,28 @@ MonoBehaviour:
   _addedNetworkObject: {fileID: 4660177777919862586}
   _networkObjectCache: {fileID: 4660177777919862586}
   playerData: {fileID: 11400000, guid: 27178dc380a6b57499d475a191dfe494, type: 2}
-  bulletInstance: {fileID: 1497446874157061577}
+  bulletInstance: {fileID: 3344757301378057451, guid: 4e0663e0fad5ca2498352d0cd3f5c261, type: 3}
   spawnPoint: {fileID: 6114093591702576320}
   weaponType: 1
   weaponTypeInHand: 0
+  bulletSpeed: 50
+  fireRate: 0.25
+  timeFireRate: 0
+  range: 600
+  canShootRate: 1
+  damage: 50
+  impactPoint: {fileID: 5217613544425883906, guid: 72549363d08eb7548a456ebf1e049939, type: 3}
+  trailImpact: {fileID: 6245182292749849369, guid: cfa57c8756603db498a5403e51080a18, type: 3}
   maxBullet: 30
-  maxTimeToReload: 1
+  maxTimeToReload: 2
+  isRealoading: 0
   inHandWeaponSprite: {fileID: -7017622547272259218, guid: 15cf8aebba458b743b1b118c8a01b31f, type: 3}
   weaponSprite: {fileID: -5836334088428628691, guid: 15cf8aebba458b743b1b118c8a01b31f, type: 3}
   weaponReload: {fileID: -1475434728336852793, guid: 15cf8aebba458b743b1b118c8a01b31f, type: 3}
+  timeToStartSpread: 0.25
+  timeToStartMaxSpread: 3
+  minAngleSpread: 20
+  maxAngleSpread: 45
 --- !u!114 &4660177777919862586
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -161,9 +175,29 @@ MonoBehaviour:
   - {fileID: 0}
   _networkBehaviours:
   - {fileID: 4212210900036897752}
+  - {fileID: 2758948249791804254}
   SceneTransformProperties:
     Position: {x: 0, y: 0, z: 0}
     Rotation: {x: 0, y: 0, z: 0, w: 1}
     LocalScale: {x: 1, y: 1, z: 1}
   _isNetworked: 1
+  _isGlobal: 0
   _hasParentNetworkObjectAtEdit: 0
+--- !u!114 &2758948249791804254
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7974065617147237754}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c71fd7f855ec523429999fc4e14a1928, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _componentIndexCache: 1
+  _addedNetworkObject: {fileID: 4660177777919862586}
+  _networkObjectCache: {fileID: 4660177777919862586}
+  _overrideType: 3
+  _setHostVisibility: 1
+  _observerConditions: []

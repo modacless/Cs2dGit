@@ -12,6 +12,7 @@ public class PlayerInitialisation : NetworkBehaviour
         base.OnStartClient();
         if (IsOwner)
         {
+            GetComponent<Rigidbody2D>().isKinematic = true;
             Camera.main.gameObject.SetActive(false);
             playerCamera.gameObject.SetActive(true);
         }
