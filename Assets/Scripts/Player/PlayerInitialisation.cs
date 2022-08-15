@@ -7,6 +7,9 @@ public class PlayerInitialisation : NetworkBehaviour
     [SerializeField]
     private Camera playerCamera;
 
+    [SerializeField]
+    private GameObject CursorObjects;
+
     public override void OnStartClient()
     {
         base.OnStartClient();
@@ -15,10 +18,12 @@ public class PlayerInitialisation : NetworkBehaviour
             GetComponent<Rigidbody2D>().isKinematic = true;
             Camera.main.gameObject.SetActive(false);
             playerCamera.gameObject.SetActive(true);
+            //CursorObjects.SetActive(true);
         }
         else
         {
             playerCamera.gameObject.SetActive(false);
+            CursorObjects.SetActive(false);
         }
     }
 

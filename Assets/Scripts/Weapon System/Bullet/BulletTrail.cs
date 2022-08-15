@@ -4,19 +4,28 @@ using UnityEngine;
 
 public class BulletTrail : MonoBehaviour
 {
-    public float speed;
-    public virtual IEnumerator TrailManager(Vector3 impactPosition)
-    {
-        Vector3 startPosition = transform.position;
-        float distance = (impactPosition - startPosition).magnitude;
-        float startingDistance = distance;
 
-        while (distance > 0)
+    public float speed;
+    public Vector3 direction;
+    public float time = 2;
+
+    public void Start()
+    {
+        time = 2;
+    }
+
+    public virtual void FixedUpdate()
+    {
+        if(time < 0)
         {
-            transform.position = Vector3.Lerp(startPosition, impactPosition, 1 - (distance / startingDistance));
-            distance -= Time.deltaTime * speed;
-            yield return null;
+            Destroy(gameObject);
         }
-        Destroy(gameObject);
+        transform.position += direction * speed ;
+        time -= Time.deltaTime;
+    }
+
+    public void UpdateImpact(Vector3 impact)
+    {
+
     }
 }

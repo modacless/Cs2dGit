@@ -11,6 +11,8 @@ public enum WeaponType
 {
     Pistol,
     Rifle,
+    Accessory,
+    Shotgun,
 }
 
 public enum WeaponState
@@ -24,7 +26,7 @@ public enum WeaponTypeInHand
 {
     Primary,
     Secondary,
-    Accessory
+    Accessory,
 }
 
 public abstract class Weapon : NetworkBehaviour, IShootable
@@ -57,17 +59,25 @@ public abstract class Weapon : NetworkBehaviour, IShootable
 
     public WeaponTypeInHand weaponTypeInHand;
 
+    //Observer pattern
+    public delegate void StaticShootDelegate(float magnitude);
+    public static event StaticShootDelegate staticShoot;
 
     //Bullet Data
     [Header("Bullet Parameter")]
     [SerializeField]
-    private float bulletSpeed;
+    private float bulletSpeed; //How much time bullet travel : (range/bulletSpeed)/bulletPrecision
     [SerializeField]
     private float fireRate; //In seconds
     [SerializeField]
     private float range;
     [SerializeField]
     public int damage;
+    [SerializeField]
+    [Range(1,100)]
+    private int bulletPrecision; // Number of raycast send
+    [HideInInspector]
+    private float intervalTimeBtwRay = 0;
 
     [HideInInspector]
     public bool canShootRate = true;
@@ -75,6 +85,7 @@ public abstract class Weapon : NetworkBehaviour, IShootable
     private double timeFireRate;
 
 
+    //Shoot
     [SerializeField]
     private GameObject impactPoint;
 
@@ -94,15 +105,15 @@ public abstract class Weapon : NetworkBehaviour, IShootable
     [SyncVar]
     protected int actualBullet;
 
-    [SyncVar]
-    [HideInInspector] public bool isRealoading;
-
     //Fire Paramater
     [Header("Fire Parameter")]
     [SerializeField] private float timeToStartSpread;
     [SerializeField] private float timeToStartMaxSpread;
     [SerializeField] private float minAngleSpread;
     [SerializeField] private float maxAngleSpread;
+
+    [SyncVar]
+    [HideInInspector] public bool isRealoading;
 
     private double actualTimeSpread = 0;
     private float actualAngleSpread = 0;
@@ -116,6 +127,12 @@ public abstract class Weapon : NetworkBehaviour, IShootable
     [SerializeField]
     protected Sprite weaponReload;
 
+    protected ParticleSystem shootParticle;
+
+    [Header("Cost")]
+    [SerializeField]
+    public int moneyCostWeapon;
+
 
     #endregion
 
@@ -123,6 +140,8 @@ public abstract class Weapon : NetworkBehaviour, IShootable
     {
         weaponSpriteRenderer = GetComponent<SpriteRenderer>();
         GetComponent<SpriteRenderer>().enabled = false;
+        intervalTimeBtwRay = (range / bulletSpeed) / bulletPrecision;
+        shootParticle = GetComponentInChildren<ParticleSystem>();
     }
 
     public override void OnStartServer()
@@ -182,13 +201,45 @@ public abstract class Weapon : NetworkBehaviour, IShootable
         {
             actualBullet--;
             canShootRate = false;
-            int layerMask = LayerMask.GetMask("Wall", "Player");
+            StartCoroutine(RaycastShootOverTime());
+            
+           
+        }
+        
+    }
 
-            Vector3 direction = Quaternion.Euler(0, Random.Range(-actualAngleSpread, actualAngleSpread), 0) * -transform.up;
-            RaycastHit2D hit = Physics2D.Raycast(spawnPoint.position, direction, range, layerMask, -Mathf.Infinity, Mathf.Infinity);
+    private IEnumerator RaycastShootOverTime()
+    {
+        int layerMask = LayerMask.GetMask("Wall", "Player");
+        Vector3 direction = Quaternion.Euler(0, Random.Range(-actualAngleSpread, actualAngleSpread), 0) * -transform.up;
+        Vector3 endPoint = direction * range;
+        Vector3 startPosition = spawnPoint.position;
+
+        float distance = (endPoint - startPosition).magnitude;
+        float breakPointDistancePrecision = distance/bulletPrecision;
+
+        //Trail setup
+        GameObject trail = Instantiate(trailImpact, spawnPoint.position, transform.rotation);
+        trail.GetComponent<BulletTrail>().speed = (range / bulletSpeed)*2;
+        trail.GetComponent<BulletTrail>().direction = direction;
+        double timeBullet = 0;
+        int i = 0;
+
+        //Play particle
+        shootParticle.Play();
+
+        //Observer pattern invoke
+        staticShoot?.Invoke((float)actualTimeSpread);
+
+        //Multi raycast bullet for more precision
+        while (i < bulletPrecision)
+        {
+            timeBullet += InstanceFinder.TimeManager.TickDelta;
+            RaycastHit2D hit = Physics2D.Raycast(startPosition, direction, breakPointDistancePrecision, layerMask, -Mathf.Infinity, Mathf.Infinity);
             
             if (hit)
             {
+                Destroy(trail);
                 ServerRpcImpact(hit.point, transform.rotation);
                 if (hit.collider.tag == "Player")
                 {
@@ -196,15 +247,19 @@ public abstract class Weapon : NetworkBehaviour, IShootable
                 }
                 else
                 {
-                    
+
                 }
+                i = bulletPrecision;
+                yield break;
             }
             else
             {
-                ServerRpcImpact(direction * range, transform.rotation);
+                startPosition += direction * breakPointDistancePrecision;
             }
+            i++;
+            yield return new WaitForSecondsRealtime(intervalTimeBtwRay);
         }
-        
+        ServerRpcImpact(direction * range, transform.rotation);
     }
 
     public virtual void UpdateSpread()
@@ -216,7 +271,6 @@ public abstract class Weapon : NetworkBehaviour, IShootable
         if(actualTimeSpread > timeToStartSpread && actualTimeSpread < timeToStartMaxSpread)
         {
             actualAngleSpread = minAngleSpread + ((float)actualTimeSpread*((maxAngleSpread - minAngleSpread) / (timeToStartMaxSpread - timeToStartSpread )));
-            Debug.Log(actualAngleSpread);
         }
         else
         {
@@ -233,7 +287,6 @@ public abstract class Weapon : NetworkBehaviour, IShootable
         if(actualTimeSpread > 0)
         {
             actualTimeSpread -= InstanceFinder.TimeManager.TickDelta;
-            Debug.Log(actualTimeSpread);
         }
         else
         {
@@ -250,9 +303,6 @@ public abstract class Weapon : NetworkBehaviour, IShootable
     [ObserversRpc]
     public virtual void ObserverRpcImpact(Vector3 position, Quaternion rotation)
     {
-        GameObject trail = Instantiate(trailImpact, spawnPoint.position, transform.rotation);
-        trail.GetComponent<BulletTrail>().speed = bulletSpeed;
-        StartCoroutine(trail.GetComponent<BulletTrail>().TrailManager(position));
         GameObject impact = Instantiate(impactPoint, position, rotation);
         InstanceFinder.ServerManager.Spawn(impact);
     }

@@ -103,12 +103,6 @@ public class PlayerWeaponSystem : NetworkBehaviour
                 ServerRpcSelectWeaponWithKey(playerData.accessoryWeaponInventory);
             }
 
-            //Spawn Weapon
-            if (Input.GetKeyDown(KeyCode.F))
-            {
-                RpcAddInInventory("Ak47");
-            }
-
             if (Input.GetMouseButton(playerData.mouseShootButton) && playerData.actualPlayerWeapon != null)
             {
                 playerData.actualPlayerWeapon.Shoot();
@@ -257,8 +251,6 @@ public class PlayerWeaponSystem : NetworkBehaviour
                 InventoryWeapon copy = inventoryPlayerWeapon[i];
                 copy.weaponInInventory = weaponToSpawn.GetComponent<Weapon>();
                 inventoryPlayerWeapon[i] = copy;
-
-
                 return;
             }
         }
