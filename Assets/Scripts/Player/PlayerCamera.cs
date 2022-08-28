@@ -37,7 +37,6 @@ public class PlayerCamera : MonoBehaviour
             y = Random.Range(-1f, 1f) * magnitude;
 
             Camera.main.transform.position += new Vector3(x, y, 0);
-            Debug.Log(playerCamera.transform.position);
             t += Time.deltaTime;
             yield return null;
         }

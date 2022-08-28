@@ -48,7 +48,7 @@ AnimatorStateMachine:
     m_Position: {x: 40, y: -90, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -9185978662796015147}
-    m_Position: {x: 30, y: -210, z: 0}
+    m_Position: {x: 50, y: -230, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -8003393751323241418}
     m_Position: {x: -180, y: -90, z: 0}
@@ -430,6 +430,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 2
     m_ConditionEvent: HoldPistol
     m_EventTreshold: 0
+  - m_ConditionMode: 2
+    m_ConditionEvent: IsReloading
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 3240562031253174646}
   m_Solo: 0
@@ -537,7 +540,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 2
-    m_ConditionEvent: HoldRifle
+    m_ConditionEvent: HoldPistol
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 3240562031253174646}

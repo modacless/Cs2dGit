@@ -29,8 +29,8 @@ public class PlayerWeaponSystem : NetworkBehaviour
     [SyncObject]
     public readonly SyncList<InventoryWeapon> inventoryPlayerWeapon = new SyncList<InventoryWeapon>();
     private InventoryWeapon mainInventory;
-    private InventoryWeapon SecondInventory;
-    private InventoryWeapon AccesInventory;
+    private InventoryWeapon secondInventory;
+    private InventoryWeapon accesInventory;
 
     [SyncVar] public int inventorySelection;
 
@@ -40,6 +40,15 @@ public class PlayerWeaponSystem : NetworkBehaviour
     private void Start()
     {
         playerLife = GetComponent<PlayerLife>();
+
+        if (ScriptablePlayerData.allWeaponDictionary.Count == 0)
+        {
+            foreach (AllWeapon weapon in playerData.allweapon)
+            {
+                ScriptablePlayerData.allWeaponDictionary.Add(weapon.name, weapon.weapon);
+            }
+        }
+
     }
 
     // Start is called before the first frame update
@@ -50,29 +59,37 @@ public class PlayerWeaponSystem : NetworkBehaviour
         //Init Inventory;
         playerData.actualPlayerWeapon = null;
         mainInventory = new InventoryWeapon();
-        mainInventory.Init(null, WeaponTypeInHand.Primary);
-        SecondInventory = new InventoryWeapon();
-        SecondInventory.Init(null, WeaponTypeInHand.Secondary);
-        AccesInventory = new InventoryWeapon();
-        AccesInventory.Init(null, WeaponTypeInHand.Accessory);
+        secondInventory = new InventoryWeapon();
+        accesInventory = new InventoryWeapon();
 
-        if(ScriptablePlayerData.allWeaponDictionary.Count != playerData.allweapon.Length)
+        if (IsOwner)
         {
-            foreach (AllWeapon weapon in playerData.allweapon)
-            {
 
-                ScriptablePlayerData.allWeaponDictionary.Add(weapon.name, weapon.weapon);
-            }
+            ButtonBuyWeaponBehavior.staticBuy += RpcAddInInventory;
         }
+
+        //Observer patterns for buying interface
+        
+
     }
     public override void OnStartServer()
     {
         base.OnStartServer();
 
+        mainInventory.Init(null, WeaponTypeInHand.Primary);
+        secondInventory.Init(null, WeaponTypeInHand.Secondary);
+        accesInventory.Init(null, WeaponTypeInHand.Accessory);
+
         //Add on Server cause sync list
         inventoryPlayerWeapon.Add(mainInventory);
-        inventoryPlayerWeapon.Add(SecondInventory);
-        inventoryPlayerWeapon.Add(AccesInventory);
+        inventoryPlayerWeapon.Add(secondInventory);
+        inventoryPlayerWeapon.Add(accesInventory);
+
+        for(int i = 0; i< inventoryPlayerWeapon.Count; i++)
+        {
+            Debug.Log(inventoryPlayerWeapon[i].weaponTypeInHand);
+        }
+
 
     }
 
@@ -221,8 +238,9 @@ public class PlayerWeaponSystem : NetworkBehaviour
         }
 
         Weapon weaponToAdd = ScriptablePlayerData.allWeaponDictionary[weaponName].GetComponent<Weapon>();
-        for (int i = 0; i< inventoryPlayerWeapon.Count - 1; i++)
+        for (int i = 0; i< inventoryPlayerWeapon.Count; i++)
         {
+            Debug.Log(inventoryPlayerWeapon[i].weaponTypeInHand);
             if(inventoryPlayerWeapon[i].weaponTypeInHand == weaponToAdd.weaponTypeInHand)
             {
                 //Drop
@@ -244,8 +262,6 @@ public class PlayerWeaponSystem : NetworkBehaviour
                 base.Spawn(weaponToSpawn, conn);
                 //weaponToSpawn.transform.position = new Vector3(0, 0, 0);
                 ClientRpcEndSpawnWeapon(weaponToSpawn.GetComponent<Weapon>(), i);
-
-
 
                 //Add in list
                 InventoryWeapon copy = inventoryPlayerWeapon[i];

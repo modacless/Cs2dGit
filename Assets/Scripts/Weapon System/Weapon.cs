@@ -29,6 +29,7 @@ public enum WeaponTypeInHand
     Accessory,
 }
 
+
 public abstract class Weapon : NetworkBehaviour, IShootable
 {
     #region var
@@ -36,8 +37,6 @@ public abstract class Weapon : NetworkBehaviour, IShootable
     [Header("References")]
     [SerializeField]
     private ScriptablePlayerData playerData;
-    [SerializeField]
-    protected GameObject bulletInstance;
     [SerializeField]
     protected Transform spawnPoint;
 
@@ -118,12 +117,13 @@ public abstract class Weapon : NetworkBehaviour, IShootable
     private double actualTimeSpread = 0;
     private float actualAngleSpread = 0;
 
+
     [Header("Weapon Sprite")]
     //Drop
     [SerializeField]
     protected Sprite inHandWeaponSprite;
     [SerializeField]
-    protected Sprite weaponSprite;
+    public Sprite weaponSprite;
     [SerializeField]
     protected Sprite weaponReload;
 
@@ -219,14 +219,14 @@ public abstract class Weapon : NetworkBehaviour, IShootable
         float breakPointDistancePrecision = distance/bulletPrecision;
 
         //Trail setup
-        GameObject trail = Instantiate(trailImpact, spawnPoint.position, transform.rotation);
-        trail.GetComponent<BulletTrail>().speed = (range / bulletSpeed)*2;
-        trail.GetComponent<BulletTrail>().direction = direction;
+
         double timeBullet = 0;
         int i = 0;
 
         //Play particle
         shootParticle.Play();
+
+        ServerRpcTrailBullet(direction);
 
         //Observer pattern invoke
         staticShoot?.Invoke((float)actualTimeSpread);
@@ -239,8 +239,8 @@ public abstract class Weapon : NetworkBehaviour, IShootable
             
             if (hit)
             {
-                Destroy(trail);
                 ServerRpcImpact(hit.point, transform.rotation);
+
                 if (hit.collider.tag == "Player")
                 {
                     hit.transform.GetComponent<PlayerLife>().ServerRpcTakeDamage(damage);
@@ -297,16 +297,23 @@ public abstract class Weapon : NetworkBehaviour, IShootable
     [ServerRpc]
     public virtual void ServerRpcImpact(Vector3 position, Quaternion rotation)
     {
-        ObserverRpcImpact(position, rotation);
-    }
-
-    [ObserversRpc]
-    public virtual void ObserverRpcImpact(Vector3 position, Quaternion rotation)
-    {
         GameObject impact = Instantiate(impactPoint, position, rotation);
         InstanceFinder.ServerManager.Spawn(impact);
     }
 
+    [ServerRpc]
+    public virtual void ServerRpcTrailBullet(Vector3 direction)
+    {
+        ObserverRpcTrailBullet(direction);
+    }
+
+    [ObserversRpc]
+    public virtual void ObserverRpcTrailBullet(Vector3 direction)
+    {
+        GameObject trail = Instantiate(trailImpact, spawnPoint.position, transform.rotation);
+        trail.GetComponent<BulletTrail>().speed = (range / bulletSpeed) * 2;
+        trail.GetComponent<BulletTrail>().direction = direction;
+    }
 
     #endregion
 

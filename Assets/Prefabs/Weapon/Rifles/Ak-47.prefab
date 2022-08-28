@@ -5139,7 +5139,6 @@ MonoBehaviour:
   _addedNetworkObject: {fileID: 4660177777919862586}
   _networkObjectCache: {fileID: 4660177777919862586}
   playerData: {fileID: 11400000, guid: 27178dc380a6b57499d475a191dfe494, type: 2}
-  bulletInstance: {fileID: 3344757301378057451, guid: 4e0663e0fad5ca2498352d0cd3f5c261, type: 3}
   spawnPoint: {fileID: 6114093591702576320}
   weaponType: 1
   weaponTypeInHand: 0
@@ -5153,14 +5152,15 @@ MonoBehaviour:
   trailImpact: {fileID: 6245182292749849369, guid: cfa57c8756603db498a5403e51080a18, type: 3}
   maxBullet: 30
   maxTimeToReload: 2
-  isRealoading: 0
   timeToStartSpread: 0.25
   timeToStartMaxSpread: 3
-  minAngleSpread: 20
-  maxAngleSpread: 45
+  minAngleSpread: 30
+  maxAngleSpread: 70
+  isRealoading: 0
   inHandWeaponSprite: {fileID: -7017622547272259218, guid: 15cf8aebba458b743b1b118c8a01b31f, type: 3}
   weaponSprite: {fileID: -5836334088428628691, guid: 15cf8aebba458b743b1b118c8a01b31f, type: 3}
   weaponReload: {fileID: -1475434728336852793, guid: 15cf8aebba458b743b1b118c8a01b31f, type: 3}
+  moneyCostWeapon: 3200
 --- !u!114 &4660177777919862586
 MonoBehaviour:
   m_ObjectHideFlags: 0

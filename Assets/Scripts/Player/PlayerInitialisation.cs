@@ -15,7 +15,6 @@ public class PlayerInitialisation : NetworkBehaviour
         base.OnStartClient();
         if (IsOwner)
         {
-            GetComponent<Rigidbody2D>().isKinematic = true;
             Camera.main.gameObject.SetActive(false);
             playerCamera.gameObject.SetActive(true);
             //CursorObjects.SetActive(true);
@@ -25,6 +24,8 @@ public class PlayerInitialisation : NetworkBehaviour
             playerCamera.gameObject.SetActive(false);
             CursorObjects.SetActive(false);
         }
+
+        GetComponent<Rigidbody2D>().gravityScale = 0;
     }
 
 }

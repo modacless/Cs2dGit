@@ -27,7 +27,6 @@ MonoBehaviour:
   rotateLCamera: 101
   reloadKey: 114
   mouseShootButton: 0
-  actualPlayerLifePoint: 100
   playerLifePoint: 100
   speed: 50
   rotateCameraSpeed: 45
@@ -35,5 +34,7 @@ MonoBehaviour:
   allweapon:
   - name: Bereta
     weapon: {fileID: 787389083896037526, guid: 0dd26a737a45bde44871cd06fdb0b219, type: 3}
-  - name: Ak47
+  - name: Ak-47
     weapon: {fileID: 7974065617147237754, guid: 554cb3034d342654fa3d3cd5cf567693, type: 3}
+  - name: Famas
+    weapon: {fileID: 4755744381567539104, guid: 60d1363a5cfe40d46a9c6e3a9909a172, type: 3}

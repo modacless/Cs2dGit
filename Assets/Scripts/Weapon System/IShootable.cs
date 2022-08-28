@@ -12,8 +12,6 @@ public interface IShootable
     public void Shoot();
     public void ServerRpcImpact(Vector3 position, Quaternion rotation);
 
-    public void ObserverRpcImpact(Vector3 position, Quaternion rotation);
-
     //Reload
     public void Reload();
     public IEnumerator ReloadManager(double time);

@@ -1,16 +1,41 @@
+using FishNet.Connection;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class ButtonBuyWeaponBehavior : MonoBehaviour
 {
-    private Button buttonBuy;
-    public string WeaponToBuy;
+    //References
+    [SerializeField] private Button buttonBuy;
+    [SerializeField] private TMP_Text weaponNameUI;
+    [SerializeField] private TMP_Text weaponCostUI;
+    [SerializeField] private Image weaponImageUi;
+
+    //Data
+    public string weaponToBuy;
+    private WeaponButtonData buttonData;
+
+    //Observer pattern//
+
+    //To create weapon
+    public delegate void StaticBuyItemDelegate(string weaponName, NetworkConnection conn = null);
+    public static event StaticBuyItemDelegate staticBuy;
+
+    //To Update UI money
+    public delegate void StaticBuyItemUiDelegate();
+    public static event StaticBuyItemUiDelegate staticBuyUpdateUi;
+    //--//
 
     public void InitButton(WeaponButtonData weaponData)
     {
-        string WeaponToBuy;
+        weaponToBuy = weaponData.weaponName;
+        weaponNameUI.text = weaponData.weaponName;
+        weaponCostUI.text = weaponData.weaponCost + " $";
+        weaponImageUi.sprite = weaponData.weaponImage;
+
+        buttonData = weaponData;
     }
 
     void Start()
@@ -19,22 +44,24 @@ public class ButtonBuyWeaponBehavior : MonoBehaviour
         buttonBuy.onClick.AddListener(Buy);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     void Buy()
     {
-        Weapon weapon = ScriptablePlayerData.allWeaponDictionary[WeaponToBuy].GetComponent<Weapon>();
-        if(weapon != null)
+        int costWeapon = int.Parse(buttonData.weaponCost);
+        if (PlayerStore.money >= costWeapon)
         {
-            
-        }
-        else
-        {
-            Debug.Log("Doesn't exist");
+            PlayerStore.money -= costWeapon;
+            staticBuyUpdateUi?.Invoke();
+
+            Weapon weapon = ScriptablePlayerData.allWeaponDictionary[weaponToBuy].GetComponent<Weapon>();
+            if(weapon != null)
+            {
+               staticBuy?.Invoke(weaponToBuy);
+            }
+            else
+            {
+                Debug.Log("Doesn't exist");
+            }
+
         }
     }
 }

@@ -2,10 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using FishNet.Object;
-
+using UnityEngine.UI;
+using TMPro;
 public struct WeaponButtonData
 {
-    public string WeaponName;
+    public string weaponName;
+    public string weaponCost;
+    public Sprite weaponImage;
 }
 
 public class PlayerStore : MenuTemple
@@ -14,31 +17,58 @@ public class PlayerStore : MenuTemple
     [SerializeField]
     private ScriptablePlayerData playerData;
     [SerializeField]
-    private GameObject StoreUi;
+    private GameObject storeUi;
     [SerializeField]
-    private GameObject ButtonBuyWeapon;
-
-    [Header("Money")]
-    public int money;
+    private GameObject buttonBuyWeapon;
+    [SerializeField]
+    private RectTransform sizeOfUi;
+    [SerializeField]
+    private TMP_Text moneyTextUi;
 
     //Array Of Button
+    public int maxSizeOfArrayButtonWeapon;
+    public Dictionary<WeaponType, int>positionInStore = new Dictionary<WeaponType, int>();
 
+
+    [Header("Money")]
+    public int startMoney;
+
+    [HideInInspector] public static int money;
 
     // Start is called before the first frame update
     public override void Start()
     {
         base.Start();
-        StoreUi.SetActive(false);
+        storeUi.SetActive(false);
 
-        foreach(AllWeapon weapon in playerData.allweapon)
+        for(int i = 0; i< playerData.allweapon.Length; i++)
         {
-            CreateButton(weapon.name);
+            bool hasKey = positionInStore.TryGetValue(playerData.allweapon[i].weapon.GetComponent<Weapon>().weaponType, out int value);
+            if(hasKey)
+            {
+                CreateButton(playerData.allweapon[i].weapon, value);
+                positionInStore[playerData.allweapon[i].weapon.GetComponent<Weapon>().weaponType]++;
+            }
+            else
+            {
+                CreateButton(playerData.allweapon[i].weapon, 0);
+                positionInStore.Add(playerData.allweapon[i].weapon.GetComponent<Weapon>().weaponType, 1);
+            }
+            Debug.Log(playerData.allweapon[i].name);
+
         }
     }
 
     public override void OnStartClient()
     {
         base.OnStartClient();
+
+        if (IsOwner)
+        {
+            ButtonBuyWeaponBehavior.staticBuyUpdateUi += UpdateMoney;
+            money = startMoney;
+            UpdateMoney();
+        }
     }
 
     // Update is called once per frame
@@ -49,7 +79,7 @@ public class PlayerStore : MenuTemple
             if (Input.GetKeyDown(playerData.openStoreUi))
             {
                 ChangeSceneMenu("MainStore");
-                StoreUi.SetActive(!StoreUi.activeSelf);
+                storeUi.SetActive(!storeUi.activeSelf);
             }
         }
 
@@ -77,19 +107,10 @@ public class PlayerStore : MenuTemple
         ChangeSceneMenu("MainStore");
     }
 
-    void BuyItem(string ItemName)
-    {
-        Weapon item = ScriptablePlayerData.allWeaponDictionary[ItemName].GetComponent<Weapon>();
-        if (money - item.moneyCostWeapon > 0)
-        {
-            GetComponent<PlayerWeaponSystem>().RpcAddInInventory(ItemName);
-            money -= item.moneyCostWeapon;
-        }
-    }
 
-    void CreateButton(string weaponName)
+    void CreateButton(GameObject weapon, int position)
     {
-        GameObject weapon = sceneMenuSort[weaponName];
+        Debug.Log("Create");
         GameObject menuToAddWeapon;
         switch (weapon.GetComponent<Weapon>().weaponType)
         {
@@ -110,10 +131,32 @@ public class PlayerStore : MenuTemple
             break;
         }
 
-        Instantiate(weapon, menuToAddWeapon.transform);
-        //weapon.GetComponent<ButtonBuyWeaponBehavior>().InitButton();
+        GameObject button = Instantiate(buttonBuyWeapon,Vector3.zero, Quaternion.identity, menuToAddWeapon.transform);
+        button.GetComponent<RectTransform>().localPosition = FindPositionInUi(maxSizeOfArrayButtonWeapon, position);
+        Weapon weaponToCreateButton = weapon.GetComponent<Weapon>();
+        button.GetComponent<ButtonBuyWeaponBehavior>().InitButton(new WeaponButtonData
+        {
+            weaponName = weaponToCreateButton.name,
+            weaponCost = weaponToCreateButton.moneyCostWeapon.ToString(),
+            weaponImage = weaponToCreateButton.weaponSprite
+        });
 
+    }
 
+    private Vector3 FindPositionInUi(int maxNumber, int position)
+    {
+        Vector3 positionUi = sizeOfUi.rect.center + new Vector2(-sizeOfUi.rect.width/2, sizeOfUi.rect.height / 2);
+        float widthCase = sizeOfUi.rect.width / maxNumber;
+        float heightCase = sizeOfUi.rect.height/ maxNumber;
+
+        Vector2 midPosition = new Vector2(widthCase / 2, heightCase / 2);
+        positionUi += new Vector3(widthCase * (position % maxNumber), heightCase * Mathf.Floor(position / maxNumber)) + new Vector3(midPosition.x, -midPosition.y,0);
+        return positionUi;
+    }
+
+    private void UpdateMoney()
+    {
+        moneyTextUi.text = money.ToString() + " $";
     }
 
 }
