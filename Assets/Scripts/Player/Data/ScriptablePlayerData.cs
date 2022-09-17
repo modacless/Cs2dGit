@@ -36,6 +36,7 @@ public class ScriptablePlayerData : ScriptableObject
     public KeyCode reloadKey;
     [Range(0, 3)]
     public int mouseShootButton;
+    public KeyCode dropWeapon;
 
     [Header("Player Data")]
     public int playerLifePoint = 100;

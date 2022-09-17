@@ -37,6 +37,10 @@ public class PlayerWeaponSystem : NetworkBehaviour
     //Data
     private delegate void EndSpawn(Weapon wepeaonToWait);
 
+    public List<Weapon> weaponsOnGroundNearPlayer = new List<Weapon>();
+
+    private bool isBuyingWeapon = false;
+
     private void Start()
     {
         playerLife = GetComponent<PlayerLife>();
@@ -64,8 +68,8 @@ public class PlayerWeaponSystem : NetworkBehaviour
 
         if (IsOwner)
         {
-
             ButtonBuyWeaponBehavior.staticBuy += RpcAddInInventory;
+            ButtonBuyWeaponBehavior.staticDropitem += DropItem;
         }
 
         //Observer patterns for buying interface
@@ -99,12 +103,12 @@ public class PlayerWeaponSystem : NetworkBehaviour
     {
         if (IsOwner && playerLife.playerHp > 0)
         {
-            //Check mosue wheel
+            //Check mouse wheel inventory
             if(Input.GetAxis("Mouse ScrollWheel") > 0 || Input.GetAxis("Mouse ScrollWheel") < 0)
             {
                 ServerRpcSelectInInventory(Input.GetAxis("Mouse ScrollWheel"));
             }
-            //Check key
+            //Key inventory
             if (Input.GetKeyDown(playerData.primaryWeaponInventory))
             {
                 ServerRpcSelectWeaponWithKey(playerData.primaryWeaponInventory);
@@ -120,6 +124,7 @@ public class PlayerWeaponSystem : NetworkBehaviour
                 ServerRpcSelectWeaponWithKey(playerData.accessoryWeaponInventory);
             }
 
+            //Shoot Action
             if (Input.GetMouseButton(playerData.mouseShootButton) && playerData.actualPlayerWeapon != null)
             {
                 playerData.actualPlayerWeapon.Shoot();
@@ -130,9 +135,37 @@ public class PlayerWeaponSystem : NetworkBehaviour
                 playerData.actualPlayerWeapon.DecraseSpread();
             }
 
+            //Reload Action
             if (Input.GetKeyDown(playerData.reloadKey) && playerData.actualPlayerWeapon != null)
             {
                 playerData.actualPlayerWeapon.Reload();
+            }
+
+            //Drop action
+            if(Input.GetKeyDown(playerData.dropWeapon))
+            {
+                Weapon weaponToPickup = FindNearestWeaponOnGround(weaponsOnGroundNearPlayer); // Chekc the nearest weapon to pickup
+                if(weaponToPickup != null)
+                {
+                    if (inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)].weaponInInventory != null)
+                    {
+                        inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)].weaponInInventory.DropItem();
+                        DropWeapon(inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)].weaponInInventory.gameObject); // Drop weapon if already have one in inventory
+                    }
+
+                    ServerRpcPlaceWeaponInHand(weaponToPickup); // Pickup Item
+                    weaponToPickup.PickupWeapon();
+                    ServerRpcSelectWeapon(inventorySelection);
+                }
+                else
+                {
+                    if(playerData.actualPlayerWeapon != null) //If no actual weapon drop item
+                    {
+                        playerData.actualPlayerWeapon.DropItem();
+                        DropWeapon(playerData.actualPlayerWeapon.gameObject);
+                    }
+
+                }
             }
 
         }
@@ -201,13 +234,15 @@ public class PlayerWeaponSystem : NetworkBehaviour
     [ObserversRpc]
     private void ObserverRpcSelectWeapon(int WeaponToChooseInInventory)
     {
-
+  
         for (int i = 0; i < inventoryPlayerWeapon.Count; i++)
         {
             if (inventoryPlayerWeapon[i].weaponInInventory != null)
             {
+                Debug.Log(WeaponToChooseInInventory);
                 if (i == WeaponToChooseInInventory)
                 {
+                    Debug.Log("Hide");
                     inventoryPlayerWeapon[i].weaponInInventory.HideWeapon(true);
 
                 }
@@ -216,13 +251,60 @@ public class PlayerWeaponSystem : NetworkBehaviour
                     inventoryPlayerWeapon[i].weaponInInventory.HideWeapon(false);
                 }
             }
-
+            
         }
         if (IsOwner)
         {
             playerData.actualPlayerWeapon = inventoryPlayerWeapon[WeaponToChooseInInventory].weaponInInventory;
         }
         
+    }
+
+    private Weapon FindNearestWeaponOnGround(List<Weapon> weaponsGround)
+    {
+        if(weaponsGround.Count > 0)
+        {
+            Weapon weaponToReturn = weaponsGround[0];
+            float nearestDistance = (transform.position - weaponsGround[0].transform.position).magnitude;
+            for(int i = 1; i< weaponsGround.Count; i++)
+            {
+                float testDistance = (transform.position - weaponsGround[i].transform.position).magnitude;
+
+                if (nearestDistance > testDistance)
+                {
+                    nearestDistance = testDistance;
+                    weaponToReturn = weaponsGround[i];
+                }
+            }
+
+            return weaponToReturn;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    private int WeaponInWichInventory(Weapon weaponToCheck)
+    {
+        int inventorySlot = 0;
+        switch (weaponToCheck.weaponTypeInHand)
+        {
+            case WeaponTypeInHand.Primary:
+                inventorySlot = 0;
+                break;
+            case WeaponTypeInHand.Secondary:
+                inventorySlot = 1;
+                break;
+            case WeaponTypeInHand.Accessory:
+                inventorySlot = 2;
+                break;
+            default:
+                inventorySlot = 0;
+                break;
+        }
+
+        return inventorySlot;
     }
 
     #endregion
@@ -238,52 +320,88 @@ public class PlayerWeaponSystem : NetworkBehaviour
         }
 
         Weapon weaponToAdd = ScriptablePlayerData.allWeaponDictionary[weaponName].GetComponent<Weapon>();
+
+        if (isBuyingWeapon)
+        {
+            PlayerStore.money += weaponToAdd.moneyCostWeapon;
+            return;
+        }
+
         for (int i = 0; i< inventoryPlayerWeapon.Count; i++)
         {
             Debug.Log(inventoryPlayerWeapon[i].weaponTypeInHand);
             if(inventoryPlayerWeapon[i].weaponTypeInHand == weaponToAdd.weaponTypeInHand)
             {
-                //Drop
-                //---
-                //---
-
-                if(inventoryPlayerWeapon[inventorySelection].weaponInInventory != null)
-                {
-                    //Drop
-                    return;
-                }
-
-                //Create Item
-                if (transform.Find("BodySprite") == null)
-                    throw new System.ArgumentException("BodySprite doesn't exist on player");
-
-                //Spawn weapon
-                GameObject weaponToSpawn = Instantiate(weaponToAdd.gameObject,new Vector3(0,0,0),Quaternion.identity,transform.Find("BodySprite"));
-                base.Spawn(weaponToSpawn, conn);
-                //weaponToSpawn.transform.position = new Vector3(0, 0, 0);
-                ClientRpcEndSpawnWeapon(weaponToSpawn.GetComponent<Weapon>(), i);
-
-                //Add in list
-                InventoryWeapon copy = inventoryPlayerWeapon[i];
-                copy.weaponInInventory = weaponToSpawn.GetComponent<Weapon>();
-                inventoryPlayerWeapon[i] = copy;
-                return;
+                StopCoroutine("ManageAddInInventory");
+                StartCoroutine(ManageAddInInventory(weaponToAdd, i, conn));  
             }
         }
 
     }
 
+
+    public IEnumerator ManageAddInInventory(Weapon weaponToAdd, int i, NetworkConnection conn)
+    {
+        isBuyingWeapon = true;
+        yield return new WaitUntil(() => inventoryPlayerWeapon[i].weaponInInventory == null);
+        yield return new WaitForSeconds(0.1f);
+
+        //Create Item
+        if (transform.Find("BodySprite") == null)
+            throw new System.ArgumentException("BodySprite doesn't exist on player");
+
+        //Spawn weapon
+        GameObject weaponToSpawn = Instantiate(weaponToAdd.gameObject, new Vector3(0, 0, 0), Quaternion.identity, transform.Find("BodySprite"));
+        base.Spawn(weaponToSpawn, conn);
+        //weaponToSpawn.transform.position = new Vector3(0, 0, 0);
+        ObserverRpcEndSpawnWeapon(weaponToSpawn.GetComponent<Weapon>(), i);
+
+        //Add in list
+        InventoryWeapon copy = inventoryPlayerWeapon[i];
+        copy.weaponInInventory = weaponToSpawn.GetComponent<Weapon>();
+        inventoryPlayerWeapon[i] = copy;
+        isBuyingWeapon = false;
+        yield break;
+
+    }
+
+    [ServerRpc]
+    public void ServerRpcPlaceWeaponInHand(Weapon weaponToPickup)
+    {
+        InventoryWeapon copy = inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)];
+        copy.weaponInInventory = weaponToPickup;
+        inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)] = copy;
+        ObserverRpcPlaceWeaponInHand(weaponToPickup);
+        weaponToPickup.isRealoading = false; // Need it to stop reloading
+    }
+
+    [ObserversRpc(IncludeOwner = true)]
+    public void ObserverRpcPlaceWeaponInHand(Weapon weaponToPickup)
+    {
+        weaponToPickup.transform.parent = transform.Find("BodySprite");
+        weaponToPickup.transform.localPosition = Vector3.zero;
+        weaponToPickup.transform.localRotation = Quaternion.identity;//Quaternion.Euler(0,0,90);
+        if(WeaponInWichInventory(weaponToPickup) != inventorySelection)
+        {
+            weaponToPickup.HideWeapon(false);
+        }
+        else
+        {
+            ServerRpcSelectInInventory(WeaponInWichInventory(weaponToPickup));
+        }
+    }
+
     [ObserversRpc]
-    private void ClientRpcEndSpawnWeapon(Weapon weapontoSpawn, int i)
+    private void ObserverRpcEndSpawnWeapon(Weapon weapontoSpawn, int i)
     {
         if (IsOwner)
         {
-            StartCoroutine(endSpawnWeapon(weapontoSpawn, i));
+            StartCoroutine(EndSpawnWeapon(weapontoSpawn, i));
         }
 
     }
 
-    private IEnumerator endSpawnWeapon(Weapon weapontToSpawn, int i)
+    private IEnumerator EndSpawnWeapon(Weapon weapontToSpawn, int i)
     {
         weapontToSpawn.HideWeapon(false);
         yield return new WaitUntil(delegate () {
@@ -296,7 +414,69 @@ public class PlayerWeaponSystem : NetworkBehaviour
 
     #endregion
 
-    #region Player Shoot and reload
+    #region Gestion Weapon
+
+    private void DropItem(Weapon weaponToPickup)
+    {
+        if (inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)].weaponInInventory != null)
+        {
+            inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)].weaponInInventory.DropItem();
+            DropWeapon(inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)].weaponInInventory.gameObject); // Drop weapon if already have one in inventory
+        }
+    }
+    private void DropWeapon(GameObject weaponToDrop)
+    {
+        if(weaponToDrop != null)
+        {
+            playerData.actualPlayerWeapon = null;
+            ServerRpcDropWeapon(weaponToDrop);
+        }
+       
+    }
+
+    [ServerRpc]
+    public void ServerRpcDropWeapon(GameObject weaponToDrop)
+    {
+        weaponToDrop.GetComponent<NetworkBehaviour>().NetworkObject.RemoveOwnership();
+        Weapon weaponComponent = weaponToDrop.GetComponent<Weapon>();
+        if (weaponComponent != null)
+        {
+            InventoryWeapon emptyWeapon;
+            switch (weaponComponent.weaponTypeInHand)
+            {
+                case WeaponTypeInHand.Primary:
+                    emptyWeapon = inventoryPlayerWeapon[0];
+                    emptyWeapon.weaponInInventory = null;
+                    inventoryPlayerWeapon[0] = emptyWeapon;
+                    break;
+                case WeaponTypeInHand.Secondary:
+                    emptyWeapon = inventoryPlayerWeapon[1];
+                    emptyWeapon.weaponInInventory = null;
+                    inventoryPlayerWeapon[1] = emptyWeapon;
+                    break;
+                case WeaponTypeInHand.Accessory:
+                    emptyWeapon = inventoryPlayerWeapon[2];
+                    emptyWeapon.weaponInInventory = null;
+                    inventoryPlayerWeapon[2] = emptyWeapon;
+                    break;
+                default:
+                    break;
+            }
+            //Pay attention can cause problem in mult
+            ObserverRpcDropWeapon(weaponToDrop, weaponToDrop.transform.rotation, -weaponToDrop.transform.up);
+        }
+    }
+
+    [ObserversRpc]
+    public void ObserverRpcDropWeapon(GameObject toDrop,Quaternion rotation,Vector3 direction)
+    {
+        toDrop.transform.parent = null;
+        toDrop.GetComponent<Weapon>().ThrowWeapon(direction * 2);
+        toDrop.transform.rotation = Quaternion.Euler(0, 0, rotation.eulerAngles.z-90);
+        toDrop.transform.position = transform.position;
+        toDrop.GetComponent<SpriteRenderer>().enabled = true;
+    }
+
 
     #endregion
 }

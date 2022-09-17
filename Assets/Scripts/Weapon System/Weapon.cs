@@ -6,6 +6,7 @@ using FishNet.Object;
 using FishNet.Object.Synchronizing;
 using FishNet.Transporting;
 using FishNet.Connection;
+using FishNet.Component.Transforming;
 
 public enum WeaponType
 {
@@ -15,12 +16,6 @@ public enum WeaponType
     Shotgun,
 }
 
-public enum WeaponState
-{
-    InHand,
-    OnGround,
-    Reload
-}
 
 public enum WeaponTypeInHand
 {
@@ -29,8 +24,8 @@ public enum WeaponTypeInHand
     Accessory,
 }
 
-
-public abstract class Weapon : NetworkBehaviour, IShootable
+[RequireComponent(typeof(SpriteRenderer),typeof(BoxCollider2D))]
+public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
 {
     #region var
     //Références
@@ -42,25 +37,23 @@ public abstract class Weapon : NetworkBehaviour, IShootable
 
     protected SpriteRenderer weaponSpriteRenderer;
 
+
+    //And other
     private WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
+
+    private int startOrdingLayer;
 
     //Weapon Data
     public WeaponType weaponType;
-    public WeaponState weaponState
-    {
-        get { return weaponState; }
-        set 
-        {
-            weaponState = value;
-            ChangeState();
-        }
-    }
 
     public WeaponTypeInHand weaponTypeInHand;
 
     //Observer pattern
     public delegate void StaticShootDelegate(float magnitude);
     public static event StaticShootDelegate staticShoot;
+
+    //NetData
+    [SyncVar] public Vector3 weaponGrounPosition;
 
     //Bullet Data
     [Header("Bullet Parameter")]
@@ -117,22 +110,32 @@ public abstract class Weapon : NetworkBehaviour, IShootable
     private double actualTimeSpread = 0;
     private float actualAngleSpread = 0;
 
+    protected ParticleSystem shootParticle;
 
     [Header("Weapon Sprite")]
     //Drop
     [SerializeField]
-    protected Sprite inHandWeaponSprite;
+    protected Sprite inHandWeaponSprite; //Weapon sprite in hand
     [SerializeField]
-    public Sprite weaponSprite;
+    public Sprite weaponSprite; // Weapon Sprite to throw, on ground ect...
     [SerializeField]
-    protected Sprite weaponReload;
+    protected Sprite weaponReload; //Reload sprite
 
-    protected ParticleSystem shootParticle;
+    //To check if can make bounce, stun enemies ect...
+    private bool isWeaponThrow = false;
+
+    [HideInInspector]
+    [SyncVar]
+    public Vector3 weaponVelocity = Vector3.zero;
+
 
     [Header("Cost")]
     [SerializeField]
     public int moneyCostWeapon;
 
+    [Header("Weapon Impact on Player")]
+    [Range(0,1)] public float weightFactor;
+    [SerializeField] private AnimationCurve throwCurve;
 
     #endregion
 
@@ -142,6 +145,8 @@ public abstract class Weapon : NetworkBehaviour, IShootable
         GetComponent<SpriteRenderer>().enabled = false;
         intervalTimeBtwRay = (range / bulletSpeed) / bulletPrecision;
         shootParticle = GetComponentInChildren<ParticleSystem>();
+
+        startOrdingLayer =  GetComponent<SpriteRenderer>().sortingOrder;
     }
 
     public override void OnStartServer()
@@ -167,6 +172,7 @@ public abstract class Weapon : NetworkBehaviour, IShootable
     private void FixedUpdate()
     {
         FireRateManager();
+        UpdateThrowWeapon();
     }
 
     #region Shoot
@@ -202,8 +208,7 @@ public abstract class Weapon : NetworkBehaviour, IShootable
             actualBullet--;
             canShootRate = false;
             StartCoroutine(RaycastShootOverTime());
-            
-           
+
         }
         
     }
@@ -259,7 +264,7 @@ public abstract class Weapon : NetworkBehaviour, IShootable
             i++;
             yield return new WaitForSecondsRealtime(intervalTimeBtwRay);
         }
-        ServerRpcImpact(direction * range, transform.rotation);
+        ServerRpcImpact(startPosition + (direction * range), transform.rotation);
     }
 
     public virtual void UpdateSpread()
@@ -313,6 +318,7 @@ public abstract class Weapon : NetworkBehaviour, IShootable
         GameObject trail = Instantiate(trailImpact, spawnPoint.position, transform.rotation);
         trail.GetComponent<BulletTrail>().speed = (range / bulletSpeed) * 2;
         trail.GetComponent<BulletTrail>().direction = direction;
+        trail.GetComponent<BulletTrail>().time = (range / bulletSpeed);
     }
 
     #endregion
@@ -338,6 +344,13 @@ public abstract class Weapon : NetworkBehaviour, IShootable
             sprite.sprite = weaponReload; //Change Sprite (reload)
             Debug.Log(actualTimeToReload);
             actualTimeToReload += Time.deltaTime;
+            if (!isRealoading)
+            {
+                sprite.sprite = inHandWeaponSprite;
+                actualTimeToReload = 0;
+                isRealoading = false;
+                yield break;
+            }
             yield return new WaitForFixedUpdate();
         }
         sprite.sprite = inHandWeaponSprite;
@@ -346,33 +359,6 @@ public abstract class Weapon : NetworkBehaviour, IShootable
         actualBullet = maxBullet;
         Debug.Log("End reload");
     }
-
-    private void ChangeState()
-    {
-        switch (weaponState)
-        {
-            case WeaponState.InHand:
-                weaponSpriteRenderer.sprite = inHandWeaponSprite;
-                break;
-            case WeaponState.OnGround:
-                weaponSpriteRenderer.sprite = weaponSprite;
-                break;
-            case WeaponState.Reload:
-                weaponSpriteRenderer.sprite = weaponReload;
-                break;
-        }
-    }
-
-    public void HideWeapon(bool onOff)
-    {
-        gameObject.SetActive(onOff);
-        GetComponent<SpriteRenderer>().enabled = onOff;
-        GetComponent<SpriteRenderer>().sprite = inHandWeaponSprite;
-        actualTimeToReload = 0;
-        isRealoading = false;
-
-    }
-
 
     #endregion
 
@@ -391,9 +377,6 @@ public abstract class Weapon : NetworkBehaviour, IShootable
         }
     }
 
-
-
-
     #endregion
 
     #region toolBox
@@ -402,6 +385,135 @@ public abstract class Weapon : NetworkBehaviour, IShootable
         return new Vector3(Random.Range(min.x, max.x), Random.Range(min.y, max.y),0);
        
     }
+
+    #endregion
+
+
+    #region Weapon Management
+
+    public void HideWeapon(bool onOff)
+    {
+        gameObject.SetActive(onOff);
+        GetComponent<SpriteRenderer>().enabled = onOff;
+        GetComponent<SpriteRenderer>().sprite = inHandWeaponSprite;
+        actualTimeToReload = 0;
+        isRealoading = false;
+    }
+    /*When we just want to hide sprite weapon*/
+    public void HideSpriteWeapon(bool oldValue, bool newValue, bool asServer)
+    {
+        GetComponent<SpriteRenderer>().enabled = newValue;
+    }
+
+
+    public void DropItem()
+    {
+        ServerRpcDropItem();
+
+    }
+    [ServerRpc]
+    public void ServerRpcDropItem()
+    {
+        ObserverRpcDropItem();
+        GetComponent<SpriteRenderer>().enabled = false;
+        isRealoading = false;
+        //GetComponent<NetworkTransform>().
+    }
+
+    [ObserversRpc]
+    public void ObserverRpcDropItem()
+    {
+        GetComponent<SpriteRenderer>().sprite = weaponSprite;
+        GetComponent<SpriteRenderer>().sortingOrder = 0;
+    }
+
+    public void PickupWeapon()
+    {
+        ServerRpcPickupWeapon();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void ServerRpcPickupWeapon(NetworkConnection conn = null)
+    {
+        this.GiveOwnership(conn);
+        ObserverRpcPickupWeapon();
+        HideWeapon(false);
+    }
+
+    [ObserversRpc]
+    public void ObserverRpcPickupWeapon()
+    {
+        GetComponent<SpriteRenderer>().sprite = inHandWeaponSprite;
+        GetComponent<SpriteRenderer>().sortingOrder = startOrdingLayer;
+    }
+
+    #endregion
+
+    #region Collision && velocity Logic
+    public void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (!isWeaponThrow)
+        {
+            if (collision.tag == "Player")
+            {
+                collision.GetComponent<PlayerWeaponSystem>().weaponsOnGroundNearPlayer.Add(this);
+            }
+        }
+        else
+        {
+
+        }
+    }
+
+    public void OnTriggerExit2D(Collider2D collision)
+    {
+        if (!isWeaponThrow)
+        {
+            if (collision.tag == "Player")
+            {
+                collision.GetComponent<PlayerWeaponSystem>().weaponsOnGroundNearPlayer.Remove(this);
+            }
+        }
+        else
+        {
+
+        }
+
+    }
+
+    private void UpdateThrowWeapon()
+    {
+        if (!isWeaponThrow && playerData.actualPlayerWeapon == this)
+        {
+            transform.localPosition = Vector3.zero;
+        }
+
+
+        //transform.position += weaponVelocity * (float)InstanceFinder.TimeManager.TickDelta;
+    }
+
+    public void ThrowWeapon(Vector3 velocityRotation)
+    {
+        StartCoroutine(ThrowWeaponMangager(velocityRotation));
+    }
+
+    private IEnumerator ThrowWeaponMangager(Vector3 weaponVelocity)
+    {
+        isWeaponThrow = true;
+        Vector3 startVelocity = weaponVelocity;
+        float time = 0;
+        while (time < throwCurve.keys[throwCurve.length-1].time)
+        {
+            Debug.Log("Time : " + weaponVelocity);
+            weaponVelocity = weaponVelocity.normalized * (startVelocity.magnitude * throwCurve.Evaluate(time));
+            time += (float)InstanceFinder.TimeManager.TickDelta;
+            transform.position += weaponVelocity * (float)InstanceFinder.TimeManager.TickDelta;
+            yield return new WaitForEndOfFrame();
+        }
+        isWeaponThrow = false;
+        yield return new WaitForEndOfFrame();
+    }
+
 
     #endregion
 }

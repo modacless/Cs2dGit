@@ -27,6 +27,7 @@ MonoBehaviour:
   rotateLCamera: 101
   reloadKey: 114
   mouseShootButton: 0
+  dropWeapon: 103
   playerLifePoint: 100
   speed: 50
   rotateCameraSpeed: 45

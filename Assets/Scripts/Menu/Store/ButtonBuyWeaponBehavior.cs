@@ -17,8 +17,6 @@ public class ButtonBuyWeaponBehavior : MonoBehaviour
     public string weaponToBuy;
     private WeaponButtonData buttonData;
 
-    //Observer pattern//
-
     //To create weapon
     public delegate void StaticBuyItemDelegate(string weaponName, NetworkConnection conn = null);
     public static event StaticBuyItemDelegate staticBuy;
@@ -26,6 +24,10 @@ public class ButtonBuyWeaponBehavior : MonoBehaviour
     //To Update UI money
     public delegate void StaticBuyItemUiDelegate();
     public static event StaticBuyItemUiDelegate staticBuyUpdateUi;
+
+    //To Drop if already got weapon
+    public delegate void StaticDropitemDelegate(Weapon weapon);
+    public static event StaticDropitemDelegate staticDropitem;
     //--//
 
     public void InitButton(WeaponButtonData weaponData)
@@ -53,7 +55,9 @@ public class ButtonBuyWeaponBehavior : MonoBehaviour
             staticBuyUpdateUi?.Invoke();
 
             Weapon weapon = ScriptablePlayerData.allWeaponDictionary[weaponToBuy].GetComponent<Weapon>();
-            if(weapon != null)
+            staticDropitem?.Invoke(weapon);
+
+            if (weapon != null)
             {
                staticBuy?.Invoke(weaponToBuy);
             }

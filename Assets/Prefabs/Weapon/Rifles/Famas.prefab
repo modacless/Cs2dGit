@@ -5050,6 +5050,7 @@ GameObject:
   - component: {fileID: 1522948125435185410}
   - component: {fileID: 8068788898912151008}
   - component: {fileID: 657418822283014532}
+  - component: {fileID: 2355521002627724483}
   m_Layer: 0
   m_Name: Famas
   m_TagString: Untagged
@@ -5111,7 +5112,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingOrder: 0
   m_Sprite: {fileID: 1360066031642413623, guid: 882cd01b48d5cf449b0e9115cb79a898, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -5160,7 +5161,33 @@ MonoBehaviour:
   inHandWeaponSprite: {fileID: 1360066031642413623, guid: 882cd01b48d5cf449b0e9115cb79a898, type: 3}
   weaponSprite: {fileID: 4705312170222220633, guid: 882cd01b48d5cf449b0e9115cb79a898, type: 3}
   weaponReload: {fileID: -4159423977742948284, guid: 882cd01b48d5cf449b0e9115cb79a898, type: 3}
+  weaponVelocity: {x: 0, y: 0, z: 0}
   moneyCostWeapon: 2800
+  weightFactor: 0
+  throwCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -0.0018326684
+      outSlope: -0.0018326684
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.3842317
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!114 &8068788898912151008
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5174,7 +5201,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   NetworkObserver: {fileID: 0}
-  _prefabId: 2
+  _prefabId: 4
   _scenePathHash: 0
   _sceneId: 0
   _sceneNetworkObjects:
@@ -5183,6 +5210,7 @@ MonoBehaviour:
   _networkBehaviours:
   - {fileID: 1522948125435185410}
   - {fileID: 657418822283014532}
+  - {fileID: 0}
   SceneTransformProperties:
     Position: {x: 0, y: 0, z: 0}
     Rotation: {x: 0, y: 0, z: 0, w: 1}
@@ -5208,3 +5236,29 @@ MonoBehaviour:
   _overrideType: 3
   _setHostVisibility: 1
   _observerConditions: []
+--- !u!61 &2355521002627724483
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4755744381567539104}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: -0.037149504, y: -0.05589869}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1, y: 1}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 0.42102847, y: 0.14785598}
+  m_EdgeRadius: 0

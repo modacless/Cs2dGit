@@ -7,7 +7,7 @@ public class BulletTrail : MonoBehaviour
 
     public float speed;
     public Vector3 direction;
-    public float time = 2;
+    public float time;
 
     public Vector3 endPoint;
     private bool hitSomething;
@@ -15,7 +15,7 @@ public class BulletTrail : MonoBehaviour
     public void Start()
     {
         int layerMask = LayerMask.GetMask("Wall", "Player");
-        time = 2;
+        
         RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, 2000f, layerMask, -Mathf.Infinity, Mathf.Infinity);
         hitSomething = hit;
         if (hit)

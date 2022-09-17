@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 787389083896037521}
   - component: {fileID: 6786936879501090356}
   - component: {fileID: 2659528010684068566}
+  - component: {fileID: 6149308124243662130}
+  - component: {fileID: -8111248519151350804}
   m_Layer: 0
   m_Name: Bereta
   m_TagString: Untagged
@@ -122,7 +124,33 @@ MonoBehaviour:
   inHandWeaponSprite: {fileID: 21300000, guid: 754a8a689d6ed264e87f956ddf7de4bd, type: 3}
   weaponSprite: {fileID: 21300000, guid: fb13ce5dd6c57c7428a0a4ccf376b75d, type: 3}
   weaponReload: {fileID: 21300000, guid: 6526b11b705149c42a8e7d2da5499cf8, type: 3}
+  weaponVelocity: {x: 0, y: 0, z: 0}
   moneyCostWeapon: 800
+  weightFactor: 0
+  throwCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -0.0018326684
+      outSlope: -0.0018326684
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.3842317
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!114 &2659528010684068566
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -142,6 +170,8 @@ MonoBehaviour:
   _sceneNetworkObjects: []
   _networkBehaviours:
   - {fileID: 6786936879501090356}
+  - {fileID: 6149308124243662130}
+  - {fileID: 0}
   SceneTransformProperties:
     Position: {x: 0, y: 0, z: 0}
     Rotation: {x: 0, y: 0, z: 0, w: 1}
@@ -149,6 +179,50 @@ MonoBehaviour:
   _isNetworked: 1
   _isGlobal: 0
   _hasParentNetworkObjectAtEdit: 0
+--- !u!114 &6149308124243662130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 787389083896037526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c71fd7f855ec523429999fc4e14a1928, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _componentIndexCache: 1
+  _addedNetworkObject: {fileID: 2659528010684068566}
+  _networkObjectCache: {fileID: 2659528010684068566}
+  _overrideType: 3
+  _setHostVisibility: 1
+  _observerConditions: []
+--- !u!61 &-8111248519151350804
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 787389083896037526}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0.008637778, y: -0.012092836}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.8, y: 0.8}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 0.11589034, y: 0.11243512}
+  m_EdgeRadius: 0
 --- !u!1 &8107380527561293861
 GameObject:
   m_ObjectHideFlags: 0

@@ -325,6 +325,7 @@ MonoBehaviour:
   _networkObjectCache: {fileID: 6743577648286833928}
   playerData: {fileID: 11400000, guid: 27178dc380a6b57499d475a191dfe494, type: 2}
   inventorySelection: 0
+  weaponsOnGroundNearPlayer: []
 --- !u!114 &8722869489825028589
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -352,8 +353,7 @@ MonoBehaviour:
   sizeOfUi: {fileID: 2483967135698280385}
   moneyTextUi: {fileID: 6784436429730944335}
   maxSizeOfArrayButtonWeapon: 4
-  startMoney: 5000
-  money: 0
+  startMoney: 50000
 --- !u!114 &3200990851559278464
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -435,7 +435,7 @@ MonoBehaviour:
   _positionSnapping:
     X: 0
     Y: 0
-    Z: 0
+    Z: 1
   _synchronizeRotation: 1
   _rotationSnapping:
     X: 0
@@ -1968,7 +1968,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: -1598706504424821414, guid: 18bba46f76bd22d4abc878142ce16ba9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -2126,7 +2126,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4624306163065670533
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3282,7 +3282,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 3
   m_Sprite: {fileID: 3122205420509871308, guid: 97b748c687d3dbd4e9a0d771ce318b56, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
