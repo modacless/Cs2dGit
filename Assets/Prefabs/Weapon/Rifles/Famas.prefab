@@ -5112,7 +5112,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 2
   m_Sprite: {fileID: 1360066031642413623, guid: 882cd01b48d5cf449b0e9115cb79a898, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -5143,6 +5143,7 @@ MonoBehaviour:
   spawnPoint: {fileID: 8903547765657673242}
   weaponType: 1
   weaponTypeInHand: 0
+  weaponGrounPosition: {x: 0, y: 0, z: 0}
   bulletSpeed: 50
   fireRate: 0.15
   range: 15
@@ -5210,7 +5211,6 @@ MonoBehaviour:
   _networkBehaviours:
   - {fileID: 1522948125435185410}
   - {fileID: 657418822283014532}
-  - {fileID: 0}
   SceneTransformProperties:
     Position: {x: 0, y: 0, z: 0}
     Rotation: {x: 0, y: 0, z: 0, w: 1}

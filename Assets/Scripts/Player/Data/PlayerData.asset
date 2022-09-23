@@ -15,6 +15,7 @@ MonoBehaviour:
   rotationCameraTransform: {fileID: 0}
   rotationCamera: {x: 0, y: 0, z: 0}
   actualPlayerWeapon: {fileID: 0}
+  playerState: 1
   leftKey: 113
   rightKey: 100
   upKey: 122

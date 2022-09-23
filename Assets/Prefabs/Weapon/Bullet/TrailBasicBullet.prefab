@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5473603583352011032}
   - component: {fileID: 633569729552465475}
   - component: {fileID: 3329116199385656916}
-  - component: {fileID: 252562057098486610}
+  - component: {fileID: -1215268720336065024}
   m_Layer: 0
   m_Name: TrailBasicBullet
   m_TagString: Untagged
@@ -26,7 +26,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6245182292749849369}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -155,7 +155,8 @@ MonoBehaviour:
   speed: 0
   direction: {x: 0, y: 0, z: 0}
   time: 2
---- !u!61 &252562057098486610
+  endPoint: {x: 0, y: 0, z: 0}
+--- !u!61 &-1215268720336065024
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -179,5 +180,5 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.05, y: 0.05}
+  m_Size: {x: 0.1, y: 0.05}
   m_EdgeRadius: 0

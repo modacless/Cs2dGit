@@ -14,6 +14,8 @@ public class ScriptablePlayerData : ScriptableObject
     public Vector3 rotationCamera;  //Never change it
     [HideInInspector]
     public Weapon actualPlayerWeapon;
+    [HideInInspector]
+    public bool inverseAnimation = false;
 
     [Header("Input")]
     public KeyCode leftKey;
@@ -51,6 +53,8 @@ public class ScriptablePlayerData : ScriptableObject
 
     public AllWeapon[] allweapon;
     public static Dictionary<string, GameObject> allWeaponDictionary = new Dictionary<string, GameObject>();
+
+
 }
 
 [System.Serializable]
@@ -59,3 +63,4 @@ public struct AllWeapon
     public string name;
     public GameObject weapon;
 }
+

@@ -13,7 +13,7 @@ TagManager:
   - Water
   - UI
   - Player
-  - 
+  - Dead
   - 
   - 
   - 
@@ -39,6 +39,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Dead
+    uniqueID: 2418236057
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0

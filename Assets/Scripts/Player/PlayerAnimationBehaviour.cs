@@ -65,18 +65,27 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
         }
     }
 
+    //Observer pattern (To Inverse animation)
+    public delegate void StaticInverseAnimationDelegate();
+    public static event StaticInverseAnimationDelegate staticInverseAnimation;
+
+
     private void Start()
     {
         rbd = GetComponent<Rigidbody2D>();
         playerLife = GetComponent<PlayerLife>();
+        PlayerLife.staticRevive += ReviveConfigurationAnimation;
+        PlayerLife.staticDie += DieConfigurationAnimation;
+
     }
 
     private void Update()
     {
-        if (IsDie())
+        if (IsDie() && bodyAnimation != BodyAnimation.Die && leggsAnimation != LegsAnimation.Die)
         {
             bodyAnimation = BodyAnimation.Die;
             leggsAnimation = LegsAnimation.Die;
+
             return;
         }
 
@@ -123,6 +132,17 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
                     bodyAnimation = BodyAnimation.Run;
 
                 leggsAnimation = LegsAnimation.Run;
+
+                //Manage inverse animation on legs
+                legsAnimator.SetBool("Inverse", playerData.inverseAnimation);
+                if (playerData.inverseAnimation)
+                {
+                    //legsAnimator.gameObject.transform.localScale = new Vector3(-1,1,1);
+                }
+                else
+                {
+                    //legsAnimator.gameObject.transform.localScale = new Vector3(1, 1, 1);
+                }
             }
             else
             {
@@ -148,7 +168,7 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
 
     private bool IsDie()
     {
-        if(playerLife.playerHp < 0)
+        if(playerLife.playerState == PlayerState.Dead)
         {
             return true;
         }
@@ -185,7 +205,7 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
                 bodyAnimator.SetBool("HoldRifle", true);
                 break;
             case BodyAnimation.Die:
-                SetAnimation(bodyAnimator, "Die", true);
+                SetAnimation(bodyAnimator, "IsDead", true);
                 break;
             default:
                 break;
@@ -203,7 +223,7 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
                 SetAnimation(legsAnimator, "WalkLegs", true);
                 break;
             case LegsAnimation.Die:
-                SetAnimation(legsAnimator, "Die", true);
+                SetAnimation(legsAnimator, "IsDead", true);
                 break;
             default:
                 break;
@@ -229,6 +249,19 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
                 }
             }
         }
+    }
+
+    //Die revive
+    private void ReviveConfigurationAnimation()
+    {
+        bodyAnimator.GetComponent<SpriteRenderer>().sortingLayerName = "default";
+        legsAnimator.GetComponent<SpriteRenderer>().sortingLayerName = "default";
+    }
+
+    private void DieConfigurationAnimation()
+    {
+        bodyAnimator.GetComponent<SpriteRenderer>().sortingLayerName = "Dead";
+        legsAnimator.GetComponent<SpriteRenderer>().sortingLayerName = "Dead";
     }
     #endregion
 }

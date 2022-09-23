@@ -6,6 +6,13 @@ using FishNet.Object;
 using FishNet.Object.Synchronizing;
 using FishNet.Connection;
 
+
+public enum PlayerState
+{
+    Normal,
+    Dead
+}
+
 public class PlayerLife : NetworkBehaviour
 {
     //Références
@@ -15,12 +22,36 @@ public class PlayerLife : NetworkBehaviour
     [SyncVar(OnChange = nameof(PlayerHpChange))]
     public int playerHp;
 
+    [HideInInspector]
+    public PlayerState playerState;
+
     private WaitForFixedUpdate waitForFixed;
+
+    //Observer pattern (for revive and die)
+    public delegate void StaticRevivePlayerDelegate();
+    public static event StaticRevivePlayerDelegate staticRevive;
+
+    public delegate void StaticDiePlayerDelegate();
+    public static event StaticDiePlayerDelegate staticDie;
+
+    //Debug
+    [Header("Debug")]
+    public bool debugActivate;
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        if (IsOwner)
+        {
+            ServerRpcInitHp();
+            playerState = PlayerState.Normal;
+        }
+
+    }
 
     public override void OnSpawnServer(NetworkConnection connection)
     {
         base.OnSpawnServer(connection);
-        playerHp = playerData.playerLifePoint;
         waitForFixed = new WaitForFixedUpdate();
     }
 
@@ -28,11 +59,26 @@ public class PlayerLife : NetworkBehaviour
 
     void PlayerHpChange(int oldValue, int newValue, bool asServer)
     {
-        Debug.Log("Hit : " + playerHp);
-        if(newValue <= 0 && oldValue > 0)
+        if (IsOwner)
         {
-            PlayerDie();
+            Debug.Log("Hit : " + playerHp);
+            if (newValue <= 0 && oldValue > 0)
+            {
+                PlayerDie();
+            }
         }
+        else
+        {
+            if (debugActivate)
+            {
+                if (newValue <= 0)
+                {
+                    Debug.Log("Hit : " + playerHp);
+                    PlayerDie();
+                }
+            }
+        }
+
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -46,7 +92,17 @@ public class PlayerLife : NetworkBehaviour
     #region Die and Spawn
     private void PlayerDie()
     {
-        RespawnManager(playerData.timeToRespawn);
+        playerState = PlayerState.Dead;
+        GetComponent<BoxCollider2D>().enabled = false;
+        staticDie?.Invoke();
+        //RespawnManager(playerData.timeToRespawn);
+    }
+
+    private void PlayerRevive()
+    {
+        playerState = PlayerState.Normal;
+        GetComponent<BoxCollider2D>().enabled = true;
+        staticRevive?.Invoke();
     }
 
     private IEnumerator RespawnManager(float time)
@@ -59,11 +115,18 @@ public class PlayerLife : NetworkBehaviour
             yield return waitForFixed;
         }
         RespawnOnPoint();
+        PlayerRevive();
     }
 
     private void RespawnOnPoint()
     {
 
+        playerHp = playerData.playerLifePoint;
+    }
+
+    [ServerRpc]
+    private void ServerRpcInitHp()
+    {
         playerHp = playerData.playerLifePoint;
     }
     #endregion

@@ -33,7 +33,7 @@ public class PlayerControl : NetworkBehaviour
 
     void FixedUpdate()
     {
-        if (IsOwner && playerLife.playerHp > 0)
+        if (IsOwner && playerLife.playerState != PlayerState.Dead)
         {
             Vector2 inputMovementH = Quaternion.Euler(playerData.rotationCamera) * Vector2.right * (right - left);
             Vector2 inputMovementV = Quaternion.Euler(playerData.rotationCamera) * Vector2.up * (up - down);

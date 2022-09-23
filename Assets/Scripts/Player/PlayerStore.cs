@@ -54,8 +54,6 @@ public class PlayerStore : MenuTemple
                 CreateButton(playerData.allweapon[i].weapon, 0);
                 positionInStore.Add(playerData.allweapon[i].weapon.GetComponent<Weapon>().weaponType, 1);
             }
-            Debug.Log(playerData.allweapon[i].name);
-
         }
     }
 
@@ -110,7 +108,6 @@ public class PlayerStore : MenuTemple
 
     void CreateButton(GameObject weapon, int position)
     {
-        Debug.Log("Create");
         GameObject menuToAddWeapon;
         switch (weapon.GetComponent<Weapon>().weaponType)
         {

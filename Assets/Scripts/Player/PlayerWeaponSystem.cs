@@ -239,10 +239,8 @@ public class PlayerWeaponSystem : NetworkBehaviour
         {
             if (inventoryPlayerWeapon[i].weaponInInventory != null)
             {
-                Debug.Log(WeaponToChooseInInventory);
                 if (i == WeaponToChooseInInventory)
                 {
-                    Debug.Log("Hide");
                     inventoryPlayerWeapon[i].weaponInInventory.HideWeapon(true);
 
                 }

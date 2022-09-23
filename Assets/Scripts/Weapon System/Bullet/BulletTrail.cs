@@ -9,24 +9,13 @@ public class BulletTrail : MonoBehaviour
     public Vector3 direction;
     public float time;
 
-    public Vector3 endPoint;
-    private bool hitSomething;
+    private int layerMask;
 
     public void Start()
     {
-        int layerMask = LayerMask.GetMask("Wall", "Player");
-        
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, 2000f, layerMask, -Mathf.Infinity, Mathf.Infinity);
-        hitSomething = hit;
-        if (hit)
-        {
-            endPoint = hit.point;
-            if((transform.position - endPoint).magnitude < 0.1f)
-            {
-                Destroy(this.gameObject);
-            }
-        }
+        layerMask = LayerMask.GetMask("Player", "Wall");
     }
+
 
     public virtual void FixedUpdate()
     {
@@ -34,16 +23,17 @@ public class BulletTrail : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, speed, layerMask);
+        if (hit)
+        {
+            Destroy(gameObject);
+
+        }
+
         transform.position += direction * speed ;
         time -= Time.deltaTime;
     }
 
-    public void OnTriggerEnter2D(Collider2D collision)
-    {
-        Debug.Log("test");
-        if(collision.tag == "Wall" || collision.tag == "Player")
-        {
-            Destroy(this.gameObject);
-        }
-    }
+   
 }
