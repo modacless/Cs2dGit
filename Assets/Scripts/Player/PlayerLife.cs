@@ -61,7 +61,6 @@ public class PlayerLife : NetworkBehaviour
     {
         if (IsOwner)
         {
-            Debug.Log("Hit : " + playerHp);
             if (newValue <= 0 && oldValue > 0)
             {
                 PlayerDie();

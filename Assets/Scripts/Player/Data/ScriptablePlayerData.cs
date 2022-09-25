@@ -34,6 +34,8 @@ public class ScriptablePlayerData : ScriptableObject
     public KeyCode rotateRCamera;
     public KeyCode rotateLCamera;
 
+    public KeyCode lockUnlockCamera;
+
     //Weapon
     public KeyCode reloadKey;
     [Range(0, 3)]

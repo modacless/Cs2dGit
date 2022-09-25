@@ -15,7 +15,7 @@ MonoBehaviour:
   rotationCameraTransform: {fileID: 0}
   rotationCamera: {x: 0, y: 0, z: 0}
   actualPlayerWeapon: {fileID: 0}
-  playerState: 1
+  inverseAnimation: 0
   leftKey: 113
   rightKey: 100
   upKey: 122
@@ -26,6 +26,7 @@ MonoBehaviour:
   openStoreUi: 98
   rotateRCamera: 97
   rotateLCamera: 101
+  lockUnlockCamera: 304
   reloadKey: 114
   mouseShootButton: 0
   dropWeapon: 103

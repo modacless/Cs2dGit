@@ -422,6 +422,7 @@ public class PlayerWeaponSystem : NetworkBehaviour
             DropWeapon(inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)].weaponInInventory.gameObject); // Drop weapon if already have one in inventory
         }
     }
+
     private void DropWeapon(GameObject weaponToDrop)
     {
         if(weaponToDrop != null)
@@ -469,6 +470,7 @@ public class PlayerWeaponSystem : NetworkBehaviour
     public void ObserverRpcDropWeapon(GameObject toDrop,Quaternion rotation,Vector3 direction)
     {
         toDrop.transform.parent = null;
+        toDrop.gameObject.SetActive(true);
         toDrop.GetComponent<Weapon>().ThrowWeapon(direction * 2);
         toDrop.transform.rotation = Quaternion.Euler(0, 0, rotation.eulerAngles.z-90);
         toDrop.transform.position = transform.position;

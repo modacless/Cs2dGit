@@ -50,7 +50,6 @@ public class PlayerRotation : NetworkBehaviour
         Vector3 rotationVector = bodyObject.transform.rotation.eulerAngles;
 
         int angleRotation = 40;
-
         int wichAngleToTake = (int)Mathf.Round(rotationVector.z/ angleRotation);
         float rotationPerInput = LegsPivotRotation(wichAngleToTake);
         
@@ -94,11 +93,6 @@ public class PlayerRotation : NetworkBehaviour
 
         if (angleBase == 0 || angleBase == 9)
         {
-            if (inputDirection == Vector2.zero)
-            {
-                return 0;
-            }
-
             if (inputDirection.y == 0)
             {
                 if (inputDirection.x == 1) // right
