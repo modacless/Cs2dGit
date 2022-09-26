@@ -135,14 +135,6 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
 
                 //Manage inverse animation on legs
                 legsAnimator.SetBool("Inverse", playerData.inverseAnimation);
-                if (playerData.inverseAnimation)
-                {
-                    //legsAnimator.gameObject.transform.localScale = new Vector3(-1,1,1);
-                }
-                else
-                {
-                    //legsAnimator.gameObject.transform.localScale = new Vector3(1, 1, 1);
-                }
             }
             else
             {

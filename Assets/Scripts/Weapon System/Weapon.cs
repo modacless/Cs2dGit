@@ -52,9 +52,6 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
     public delegate void StaticShootDelegate(float magnitude);
     public static event StaticShootDelegate staticShoot;
 
-    //NetData
-    [SyncVar] public Vector3 weaponGrounPosition;
-
     //Bullet Data
     [Header("Bullet Parameter")]
     [SerializeField]
@@ -172,7 +169,20 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
     private void FixedUpdate()
     {
         FireRateManager();
-        UpdateThrowWeapon();
+    }
+
+    private void Update()
+    {
+        if(transform.parent != null)
+        {
+            transform.localPosition = new Vector3(0, 0, 0);
+        }
+    }
+
+    public override void OnOwnershipClient(NetworkConnection prevOwner)
+    {
+        base.OnOwnershipClient(prevOwner);
+
     }
 
     #region Shoot
@@ -391,7 +401,7 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
 
     #region Weapon Management
 
-    public void HideWeapon(bool onOff)
+    public void UnHideWeapon(bool onOff)
     {
         gameObject.SetActive(onOff);
         GetComponent<SpriteRenderer>().enabled = onOff;
@@ -417,7 +427,6 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
         ObserverRpcDropItem();
         GetComponent<SpriteRenderer>().enabled = false;
         isRealoading = false;
-        //GetComponent<NetworkTransform>().
     }
 
     [ObserversRpc]
@@ -437,7 +446,6 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
     {
         this.GiveOwnership(conn);
         ObserverRpcPickupWeapon();
-        HideWeapon(false);
     }
 
     [ObserversRpc]
@@ -481,16 +489,6 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
 
     }
 
-    private void UpdateThrowWeapon()
-    {
-        if (!isWeaponThrow && playerData.actualPlayerWeapon == this)
-        {
-            transform.localPosition = Vector3.zero;
-        }
-
-
-        //transform.position += weaponVelocity * (float)InstanceFinder.TimeManager.TickDelta;
-    }
 
     public void ThrowWeapon(Vector3 velocityRotation)
     {
@@ -504,7 +502,6 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
         float time = 0;
         while (time < throwCurve.keys[throwCurve.length-1].time)
         {
-            Debug.Log("Time : " + weaponVelocity);
             weaponVelocity = weaponVelocity.normalized * (startVelocity.magnitude * throwCurve.Evaluate(time));
             time += (float)InstanceFinder.TimeManager.TickDelta;
             transform.position += weaponVelocity * (float)InstanceFinder.TimeManager.TickDelta;

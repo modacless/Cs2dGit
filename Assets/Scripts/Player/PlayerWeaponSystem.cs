@@ -5,6 +5,7 @@ using FishNet.Object;
 using FishNet.Object.Synchronizing;
 using FishNet.Transporting;
 using FishNet.Connection;
+using System.Threading.Tasks;
 
 [System.Serializable]
 public struct InventoryWeapon
@@ -99,7 +100,7 @@ public class PlayerWeaponSystem : NetworkBehaviour
 
 
     // Update is called once per frame
-    void Update()
+    async void Update()
     {
         if (IsOwner && playerLife.playerHp > 0)
         {
@@ -153,9 +154,18 @@ public class PlayerWeaponSystem : NetworkBehaviour
                         DropWeapon(inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)].weaponInInventory.gameObject); // Drop weapon if already have one in inventory
                     }
 
-                    ServerRpcPlaceWeaponInHand(weaponToPickup); // Pickup Item
-                    weaponToPickup.PickupWeapon();
-                    ServerRpcSelectWeapon(inventorySelection);
+                    var result = Task.Run(() =>
+                    {
+                        ServerRpcPlaceWeaponInHand(weaponToPickup); // Pickup Item
+                        weaponToPickup.PickupWeapon();
+                    });
+
+                    if (WeaponInWichInventory(weaponToPickup) == inventorySelection)
+                    {
+                        playerData.actualPlayerWeapon = weaponToPickup;
+                    }
+                    
+
                 }
                 else
                 {
@@ -234,19 +244,18 @@ public class PlayerWeaponSystem : NetworkBehaviour
     [ObserversRpc]
     private void ObserverRpcSelectWeapon(int WeaponToChooseInInventory)
     {
-  
         for (int i = 0; i < inventoryPlayerWeapon.Count; i++)
         {
             if (inventoryPlayerWeapon[i].weaponInInventory != null)
             {
                 if (i == WeaponToChooseInInventory)
                 {
-                    inventoryPlayerWeapon[i].weaponInInventory.HideWeapon(true);
+                    inventoryPlayerWeapon[i].weaponInInventory.UnHideWeapon(true);
 
                 }
                 else
                 {
-                    inventoryPlayerWeapon[i].weaponInInventory.HideWeapon(false);
+                    inventoryPlayerWeapon[i].weaponInInventory.UnHideWeapon(false);
                 }
             }
             
@@ -377,16 +386,13 @@ public class PlayerWeaponSystem : NetworkBehaviour
     public void ObserverRpcPlaceWeaponInHand(Weapon weaponToPickup)
     {
         weaponToPickup.transform.parent = transform.Find("BodySprite");
-        weaponToPickup.transform.localPosition = Vector3.zero;
-        weaponToPickup.transform.localRotation = Quaternion.identity;//Quaternion.Euler(0,0,90);
-        if(WeaponInWichInventory(weaponToPickup) != inventorySelection)
+        weaponToPickup.transform.localRotation = Quaternion.identity;
+        //weaponToPickup.transform.localPosition = Vector3.zero;
+        if (WeaponInWichInventory(weaponToPickup) != inventorySelection)
         {
-            weaponToPickup.HideWeapon(false);
+            weaponToPickup.UnHideWeapon(false);
         }
-        else
-        {
-            ServerRpcSelectInInventory(WeaponInWichInventory(weaponToPickup));
-        }
+
     }
 
     [ObserversRpc]
@@ -401,12 +407,17 @@ public class PlayerWeaponSystem : NetworkBehaviour
 
     private IEnumerator EndSpawnWeapon(Weapon weapontToSpawn, int i)
     {
-        weapontToSpawn.HideWeapon(false);
+        weapontToSpawn.UnHideWeapon(false);
         yield return new WaitUntil(delegate () {
             return weapontToSpawn.IsSpawned;
         });
 
-        weapontToSpawn.HideWeapon(true);
+        weapontToSpawn.UnHideWeapon(false);
+        yield return new WaitUntil(delegate () {
+            return weapontToSpawn.transform.parent != null;
+        });
+
+        weapontToSpawn.UnHideWeapon(true);
         ServerRpcSelectWeapon(i);
     }
 
