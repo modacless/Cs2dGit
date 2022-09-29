@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2659528010684068566}
   - component: {fileID: 6149308124243662130}
   - component: {fileID: -8111248519151350804}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Bereta
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -106,7 +106,6 @@ MonoBehaviour:
   spawnPoint: {fileID: 3503048337991387436}
   weaponType: 0
   weaponTypeInHand: 1
-  weaponGrounPosition: {x: 0, y: 0, z: 0}
   bulletSpeed: 35
   fireRate: 0.4
   range: 10
@@ -125,7 +124,7 @@ MonoBehaviour:
   inHandWeaponSprite: {fileID: 21300000, guid: 754a8a689d6ed264e87f956ddf7de4bd, type: 3}
   weaponSprite: {fileID: 21300000, guid: fb13ce5dd6c57c7428a0a4ccf376b75d, type: 3}
   weaponReload: {fileID: 21300000, guid: 6526b11b705149c42a8e7d2da5499cf8, type: 3}
-  weaponVelocity: {x: 0, y: 0, z: 0}
+  weaponVelocityBounds: {x: 0, y: 0, z: 0}
   moneyCostWeapon: 800
   weightFactor: 0
   throwCurve:

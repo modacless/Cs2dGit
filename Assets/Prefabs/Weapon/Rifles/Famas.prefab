@@ -5051,7 +5051,7 @@ GameObject:
   - component: {fileID: 8068788898912151008}
   - component: {fileID: 657418822283014532}
   - component: {fileID: 2355521002627724483}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Famas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5143,7 +5143,6 @@ MonoBehaviour:
   spawnPoint: {fileID: 8903547765657673242}
   weaponType: 1
   weaponTypeInHand: 0
-  weaponGrounPosition: {x: 0, y: 0, z: 0}
   bulletSpeed: 50
   fireRate: 0.15
   range: 15
@@ -5162,7 +5161,7 @@ MonoBehaviour:
   inHandWeaponSprite: {fileID: 1360066031642413623, guid: 882cd01b48d5cf449b0e9115cb79a898, type: 3}
   weaponSprite: {fileID: 4705312170222220633, guid: 882cd01b48d5cf449b0e9115cb79a898, type: 3}
   weaponReload: {fileID: -4159423977742948284, guid: 882cd01b48d5cf449b0e9115cb79a898, type: 3}
-  weaponVelocity: {x: 0, y: 0, z: 0}
+  weaponVelocityBounds: {x: 0, y: 0, z: 0}
   moneyCostWeapon: 2800
   weightFactor: 0
   throwCurve:

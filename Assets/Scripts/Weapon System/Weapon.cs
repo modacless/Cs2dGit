@@ -122,8 +122,8 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
     private bool isWeaponThrow = false;
 
     [HideInInspector]
-    [SyncVar]
-    public Vector3 weaponVelocity = Vector3.zero;
+    public Vector3 weaponVelocityBounds = Vector3.zero;
+    float timeThrow = 0; //Time spent in the air don't tuch it
 
 
     [Header("Cost")]
@@ -163,8 +163,6 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
         base.OnStartClient();
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
-        //Client don't get good array
-        //BulletsInMagazine = new GameObject[maxBullet];
     }
     private void FixedUpdate()
     {
@@ -176,6 +174,10 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
         if(transform.parent != null)
         {
             transform.localPosition = new Vector3(0, 0, 0);
+        }
+        else
+        {
+            Debug.DrawRay(transform.position, transform.up, Color.red, 20);
         }
     }
 
@@ -462,29 +464,39 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
     {
         if (!isWeaponThrow)
         {
-            if (collision.tag == "Player")
+            if (collision.CompareTag("Player"))
             {
                 collision.GetComponent<PlayerWeaponSystem>().weaponsOnGroundNearPlayer.Add(this);
             }
         }
         else
         {
+            if (collision.gameObject.CompareTag("Wall"))
+            {
+                ThrowBounceVelocity();
+            }
+
+            if (collision.CompareTag("Player") && timeThrow > 0.1)
+            {
+                ThrowBounceVelocity();
+            }
 
         }
     }
+
 
     public void OnTriggerExit2D(Collider2D collision)
     {
         if (!isWeaponThrow)
         {
-            if (collision.tag == "Player")
+            if (collision.CompareTag("Player"))
             {
                 collision.GetComponent<PlayerWeaponSystem>().weaponsOnGroundNearPlayer.Remove(this);
             }
         }
         else
         {
-
+           
         }
 
     }
@@ -499,16 +511,58 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
     {
         isWeaponThrow = true;
         Vector3 startVelocity = weaponVelocity;
-        float time = 0;
-        while (time < throwCurve.keys[throwCurve.length-1].time)
+        if (IsServer)
         {
-            weaponVelocity = weaponVelocity.normalized * (startVelocity.magnitude * throwCurve.Evaluate(time));
-            time += (float)InstanceFinder.TimeManager.TickDelta;
+            weaponVelocityBounds = weaponVelocity;
+        }
+
+        timeThrow = 0;
+        while (timeThrow < throwCurve.keys[throwCurve.length-1].time)
+        {
+            if (IsServer)
+            {
+                weaponVelocity = weaponVelocityBounds * (startVelocity.magnitude * throwCurve.Evaluate(timeThrow));
+            }
+            timeThrow += (float)InstanceFinder.TimeManager.TickDelta;
             transform.position += weaponVelocity * (float)InstanceFinder.TimeManager.TickDelta;
             yield return new WaitForEndOfFrame();
         }
         isWeaponThrow = false;
         yield return new WaitForEndOfFrame();
+    }
+
+    private void ThrowBounceVelocity()
+    {
+        //Draw 2 raycast for each direction
+        int layerMask = LayerMask.GetMask("Player", "Wall");
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, transform.right, 1, layerMask);
+        if (hit)
+        {
+            weaponVelocityBounds = weaponVelocityBounds.magnitude * Vector2.Reflect(weaponVelocityBounds.normalized, hit.normal);
+            return;
+        }
+
+        hit = Physics2D.Raycast(transform.position, -transform.right, 1, layerMask);
+        if (hit)
+        {
+            weaponVelocityBounds = weaponVelocityBounds.magnitude * Vector2.Reflect(weaponVelocityBounds.normalized, hit.normal);
+            return;
+        }
+
+        hit = Physics2D.Raycast(transform.position, transform.up, 1, layerMask);
+        if (hit)
+        {
+            weaponVelocityBounds = weaponVelocityBounds.magnitude * Vector2.Reflect(weaponVelocityBounds.normalized, hit.normal);
+            return;
+        }
+
+        hit = Physics2D.Raycast(transform.position, -transform.up, 1, layerMask);
+        if (hit)
+        {
+            weaponVelocityBounds = weaponVelocityBounds.magnitude * Vector2.Reflect(weaponVelocityBounds.normalized, hit.normal);
+            return;
+        }
+
     }
 
 

@@ -5051,7 +5051,7 @@ GameObject:
   - component: {fileID: 4660177777919862586}
   - component: {fileID: 2758948249791804254}
   - component: {fileID: 3673990888951072224}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Ak-47
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5143,7 +5143,6 @@ MonoBehaviour:
   spawnPoint: {fileID: 6114093591702576320}
   weaponType: 1
   weaponTypeInHand: 0
-  weaponGrounPosition: {x: 0, y: 0, z: 0}
   bulletSpeed: 50
   fireRate: 0.15
   range: 20
@@ -5162,7 +5161,7 @@ MonoBehaviour:
   inHandWeaponSprite: {fileID: -7017622547272259218, guid: 15cf8aebba458b743b1b118c8a01b31f, type: 3}
   weaponSprite: {fileID: -5836334088428628691, guid: 15cf8aebba458b743b1b118c8a01b31f, type: 3}
   weaponReload: {fileID: -1475434728336852793, guid: 15cf8aebba458b743b1b118c8a01b31f, type: 3}
-  weaponVelocity: {x: 0, y: 0, z: 0}
+  weaponVelocityBounds: {x: 0, y: 0, z: 0}
   moneyCostWeapon: 3200
   weightFactor: 0
   throwCurve:
@@ -5211,6 +5210,7 @@ MonoBehaviour:
   _networkBehaviours:
   - {fileID: 4212210900036897752}
   - {fileID: 2758948249791804254}
+  - {fileID: 0}
   SceneTransformProperties:
     Position: {x: 0, y: 0, z: 0}
     Rotation: {x: 0, y: 0, z: 0, w: 1}
