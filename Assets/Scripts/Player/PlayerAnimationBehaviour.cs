@@ -79,13 +79,20 @@ public class PlayerAnimationBehaviour : NetworkBehaviour
 
     }
 
+    public override void OnStopClient()
+    {
+        base.OnStopClient();
+
+        PlayerLife.staticRevive -= ReviveConfigurationAnimation;
+        PlayerLife.staticDie -= DieConfigurationAnimation;
+    }
+
     private void Update()
     {
-        if (IsDie() && bodyAnimation != BodyAnimation.Die && leggsAnimation != LegsAnimation.Die)
+        if (IsDie())
         {
             bodyAnimation = BodyAnimation.Die;
             leggsAnimation = LegsAnimation.Die;
-
             return;
         }
 

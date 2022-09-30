@@ -190,4 +190,13 @@ public class PlayerCamera : NetworkBehaviour
         canUnlock = true;
         yield return null;
     }
+
+    public override void OnStopClient()
+    {
+        base.OnStopClient();
+        if (IsOwner)
+        {
+            Weapon.staticShoot -= CameraShake;
+        }
+    }
 }

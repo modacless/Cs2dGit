@@ -38,6 +38,7 @@ public class PlayerLife : NetworkBehaviour
     [Header("Debug")]
     public bool debugActivate;
 
+    #region Fishnet Base Function
     public override void OnStartClient()
     {
         base.OnStartClient();
@@ -49,11 +50,14 @@ public class PlayerLife : NetworkBehaviour
 
     }
 
+
     public override void OnSpawnServer(NetworkConnection connection)
     {
         base.OnSpawnServer(connection);
         waitForFixed = new WaitForFixedUpdate();
     }
+
+    #endregion
 
     #region Change Hp
 

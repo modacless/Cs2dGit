@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 2659528010684068566}
   - component: {fileID: 6149308124243662130}
   - component: {fileID: -8111248519151350804}
+  - component: {fileID: 8754108447688434484}
   m_Layer: 8
   m_Name: Bereta
   m_TagString: Untagged
@@ -222,6 +223,48 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.11589034, y: 0.11243512}
   m_EdgeRadius: 0
+--- !u!114 &8754108447688434484
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 787389083896037526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2836e36774ca1c4bbbee976e17b649c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _componentIndexCache: 2
+  _addedNetworkObject: {fileID: 2659528010684068566}
+  _networkObjectCache: {fileID: 0}
+  _synchronizeParent: 0
+  _packing:
+    Position: 1
+    Rotation: 1
+    Scale: 0
+  _interpolation: 1
+  _extrapolation: 2
+  _enableTeleport: 0
+  _teleportThreshold: 1
+  _clientAuthoritative: 0
+  _sendToOwner: 1
+  _interval: 1
+  _synchronizePosition: 1
+  _positionSnapping:
+    X: 0
+    Y: 0
+    Z: 0
+  _synchronizeRotation: 1
+  _rotationSnapping:
+    X: 0
+    Y: 0
+    Z: 0
+  _synchronizeScale: 1
+  _scaleSnapping:
+    X: 0
+    Y: 0
+    Z: 0
 --- !u!1 &8107380527561293861
 GameObject:
   m_ObjectHideFlags: 0

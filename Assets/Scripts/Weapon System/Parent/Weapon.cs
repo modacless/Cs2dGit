@@ -136,6 +136,7 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
 
     #endregion
 
+    #region Unity Base Function
     private void Start()
     {
         weaponSpriteRenderer = GetComponent<SpriteRenderer>();
@@ -143,9 +144,29 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
         intervalTimeBtwRay = (range / bulletSpeed) / bulletPrecision;
         shootParticle = GetComponentInChildren<ParticleSystem>();
 
-        startOrdingLayer =  GetComponent<SpriteRenderer>().sortingOrder;
+        startOrdingLayer = GetComponent<SpriteRenderer>().sortingOrder;
     }
 
+    private void FixedUpdate()
+    {
+        FireRateManager();
+    }
+
+    private void Update()
+    {
+        if (transform.parent != null)
+        {
+            transform.localPosition = new Vector3(0, 0, 0);
+        }
+        else
+        {
+            Debug.DrawRay(transform.position, transform.up, Color.red, 20);
+        }
+    }
+
+    #endregion
+
+    #region Fishnet Base Function
     public override void OnStartServer()
     {
         base.OnStartServer();
@@ -164,28 +185,9 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
     }
-    private void FixedUpdate()
-    {
-        FireRateManager();
-    }
 
-    private void Update()
-    {
-        if(transform.parent != null)
-        {
-            transform.localPosition = new Vector3(0, 0, 0);
-        }
-        else
-        {
-            Debug.DrawRay(transform.position, transform.up, Color.red, 20);
-        }
-    }
+    #endregion
 
-    public override void OnOwnershipClient(NetworkConnection prevOwner)
-    {
-        base.OnOwnershipClient(prevOwner);
-
-    }
 
     #region Shoot
     public virtual void Shoot()
@@ -511,18 +513,14 @@ public abstract class Weapon : NetworkBehaviour, IShootable, IDropable
     {
         isWeaponThrow = true;
         Vector3 startVelocity = weaponVelocity;
-        if (IsServer)
-        {
-            weaponVelocityBounds = weaponVelocity;
-        }
+
+        weaponVelocityBounds = weaponVelocity;
 
         timeThrow = 0;
         while (timeThrow < throwCurve.keys[throwCurve.length-1].time)
         {
-            if (IsServer)
-            {
-                weaponVelocity = weaponVelocityBounds * (startVelocity.magnitude * throwCurve.Evaluate(timeThrow));
-            }
+
+            weaponVelocity = weaponVelocityBounds * (startVelocity.magnitude * throwCurve.Evaluate(timeThrow));
             timeThrow += (float)InstanceFinder.TimeManager.TickDelta;
             transform.position += weaponVelocity * (float)InstanceFinder.TimeManager.TickDelta;
             yield return new WaitForEndOfFrame();

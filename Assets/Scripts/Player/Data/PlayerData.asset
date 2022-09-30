@@ -27,6 +27,7 @@ MonoBehaviour:
   rotateRCamera: 97
   rotateLCamera: 101
   lockUnlockCamera: 304
+  openCloseMenu: 27
   reloadKey: 114
   mouseShootButton: 0
   dropWeapon: 103

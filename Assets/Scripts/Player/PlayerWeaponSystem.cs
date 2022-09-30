@@ -42,6 +42,7 @@ public class PlayerWeaponSystem : NetworkBehaviour
 
     private bool isBuyingWeapon = false;
 
+    #region Unity Base Region
     private void Start()
     {
         playerLife = GetComponent<PlayerLife>();
@@ -56,6 +57,90 @@ public class PlayerWeaponSystem : NetworkBehaviour
 
     }
 
+    void Update()
+    {
+        if (IsOwner && playerLife.playerHp > 0)
+        {
+            //Check mouse wheel inventory
+            if (Input.GetAxis("Mouse ScrollWheel") > 0 || Input.GetAxis("Mouse ScrollWheel") < 0)
+            {
+                ServerRpcSelectInInventory(Input.GetAxis("Mouse ScrollWheel"));
+            }
+            //Key inventory
+            if (Input.GetKeyDown(playerData.primaryWeaponInventory))
+            {
+                ServerRpcSelectWeaponWithKey(playerData.primaryWeaponInventory);
+            }
+
+            if (Input.GetKeyDown(playerData.secondaryWeaponInventory))
+            {
+                ServerRpcSelectWeaponWithKey(playerData.secondaryWeaponInventory);
+            }
+
+            if (Input.GetKeyDown(playerData.accessoryWeaponInventory))
+            {
+                ServerRpcSelectWeaponWithKey(playerData.accessoryWeaponInventory);
+            }
+
+            //Shoot Action
+            if (Input.GetMouseButton(playerData.mouseShootButton) && playerData.actualPlayerWeapon != null)
+            {
+                playerData.actualPlayerWeapon.Shoot();
+            }
+
+            if (!Input.GetMouseButton(playerData.mouseShootButton) && playerData.actualPlayerWeapon != null)
+            {
+                playerData.actualPlayerWeapon.DecraseSpread();
+            }
+
+            //Reload Action
+            if (Input.GetKeyDown(playerData.reloadKey) && playerData.actualPlayerWeapon != null)
+            {
+                playerData.actualPlayerWeapon.Reload();
+            }
+
+            //Drop action
+            if (Input.GetKeyDown(playerData.dropWeapon))
+            {
+                Weapon weaponToPickup = FindNearestWeaponOnGround(weaponsOnGroundNearPlayer); // Chekc the nearest weapon to pickup
+                if (weaponToPickup != null)
+                {
+                    if (inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)].weaponInInventory != null)
+                    {
+                        inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)].weaponInInventory.DropItem();
+                        DropWeapon(inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)].weaponInInventory.gameObject); // Drop weapon if already have one in inventory
+                    }
+
+                    var result = Task.Run(() =>
+                    {
+                        ServerRpcPlaceWeaponInHand(weaponToPickup); // Pickup Item
+                        weaponToPickup.PickupWeapon();
+                    });
+
+                    if (WeaponInWichInventory(weaponToPickup) == inventorySelection)
+                    {
+                        playerData.actualPlayerWeapon = weaponToPickup;
+                    }
+
+
+                }
+                else
+                {
+                    if (playerData.actualPlayerWeapon != null) //If no actual weapon drop item
+                    {
+                        playerData.actualPlayerWeapon.DropItem();
+                        DropWeapon(playerData.actualPlayerWeapon.gameObject);
+                    }
+
+                }
+            }
+
+        }
+    }
+
+    #endregion
+
+    #region Fishnet Base Function
     // Start is called before the first frame update
     public override void OnStartClient()
     {
@@ -98,89 +183,19 @@ public class PlayerWeaponSystem : NetworkBehaviour
 
     }
 
-
-    // Update is called once per frame
-    async void Update()
+    public override void OnStopClient()
     {
-        if (IsOwner && playerLife.playerHp > 0)
+        base.OnStopClient();
+        if (IsOwner)
         {
-            //Check mouse wheel inventory
-            if(Input.GetAxis("Mouse ScrollWheel") > 0 || Input.GetAxis("Mouse ScrollWheel") < 0)
-            {
-                ServerRpcSelectInInventory(Input.GetAxis("Mouse ScrollWheel"));
-            }
-            //Key inventory
-            if (Input.GetKeyDown(playerData.primaryWeaponInventory))
-            {
-                ServerRpcSelectWeaponWithKey(playerData.primaryWeaponInventory);
-            }
-
-            if (Input.GetKeyDown(playerData.secondaryWeaponInventory))
-            {
-                ServerRpcSelectWeaponWithKey(playerData.secondaryWeaponInventory);
-            }
-
-            if (Input.GetKeyDown(playerData.accessoryWeaponInventory))
-            {
-                ServerRpcSelectWeaponWithKey(playerData.accessoryWeaponInventory);
-            }
-
-            //Shoot Action
-            if (Input.GetMouseButton(playerData.mouseShootButton) && playerData.actualPlayerWeapon != null)
-            {
-                playerData.actualPlayerWeapon.Shoot();
-            }
-
-            if (!Input.GetMouseButton(playerData.mouseShootButton) && playerData.actualPlayerWeapon != null)
-            {
-                playerData.actualPlayerWeapon.DecraseSpread();
-            }
-
-            //Reload Action
-            if (Input.GetKeyDown(playerData.reloadKey) && playerData.actualPlayerWeapon != null)
-            {
-                playerData.actualPlayerWeapon.Reload();
-            }
-
-            //Drop action
-            if(Input.GetKeyDown(playerData.dropWeapon))
-            {
-                Weapon weaponToPickup = FindNearestWeaponOnGround(weaponsOnGroundNearPlayer); // Chekc the nearest weapon to pickup
-                if(weaponToPickup != null)
-                {
-                    if (inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)].weaponInInventory != null)
-                    {
-                        inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)].weaponInInventory.DropItem();
-                        DropWeapon(inventoryPlayerWeapon[WeaponInWichInventory(weaponToPickup)].weaponInInventory.gameObject); // Drop weapon if already have one in inventory
-                    }
-
-                    var result = Task.Run(() =>
-                    {
-                        ServerRpcPlaceWeaponInHand(weaponToPickup); // Pickup Item
-                        weaponToPickup.PickupWeapon();
-                    });
-
-                    if (WeaponInWichInventory(weaponToPickup) == inventorySelection)
-                    {
-                        playerData.actualPlayerWeapon = weaponToPickup;
-                    }
-                    
-
-                }
-                else
-                {
-                    if(playerData.actualPlayerWeapon != null) //If no actual weapon drop item
-                    {
-                        playerData.actualPlayerWeapon.DropItem();
-                        DropWeapon(playerData.actualPlayerWeapon.gameObject);
-                    }
-
-                }
-            }
-
+            ButtonBuyWeaponBehavior.staticBuy -= RpcAddInInventory;
+            ButtonBuyWeaponBehavior.staticDropitem -= DropItem;
         }
     }
 
+    #endregion
+
+   
     #region Select weapon
     //Select weapon with key
     [ServerRpc]

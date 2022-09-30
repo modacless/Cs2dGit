@@ -14,85 +14,62 @@ public class TeamMenuBehaviour : NetworkBehaviour
     public TMP_Text terroristNumberText;
     public TMP_Text antiterroristNumberText;
 
-    [SyncVar(OnChange = nameof(TerroristNumberChange))]
-    [HideInInspector]
-    public int terroristNumber;
-    [SyncVar(OnChange = nameof(AntiterroristNumberChange))]
-    [HideInInspector]
-    public int antiterroristNumber;
+    //Observer pattern to create object player and set in a team
+    public delegate void StaticSpawnInTerrorist(NetworkConnection clientConnection);
+    public static event StaticSpawnInTerrorist staticSpawnTerrorist;
 
-    [SyncObject]
-    public readonly SyncList<GameObject> terroristTeam = new SyncList<GameObject>();
-    [SyncObject]
-    public readonly SyncList<GameObject> antiterroristTeam = new SyncList<GameObject>();
+    public delegate void StaticSpawnInAntiTerrorist(NetworkConnection clientConnection);
+    public static event StaticSpawnInAntiTerrorist staticSpawnAntiTerrorist;
 
-    public GameObject prefabPlayer;
-    public SpawnTeam terroristSpawn;
-    public SpawnTeam antiterroristSpawn;
 
     void Start()
     {
         teamMenu.SetActive(true);
+        NetworkTeamManager.staticAntiTerroristNumber += UpdateTextAntiTerroristNumber;
+        NetworkTeamManager.staticTerroristNumber += UpdateTextTerroristNumber;
     }
 
-    // Update is called once per frame
-    void Update()
+    public override void OnStopClient()
     {
-        
+        base.OnStopClient();
+        if (IsOwner)
+        {
+            NetworkTeamManager.staticAntiTerroristNumber -= UpdateTextAntiTerroristNumber;
+            NetworkTeamManager.staticTerroristNumber -= UpdateTextTerroristNumber;
+        }
     }
 
-    private void OnEnable()
-    {
-        
-    }
-
-    public void OnPressedTerrorist()
-    {
-        HideTeamMenu();
-        RpcPressedTerrorist(LocalConnection);
-        //terroristTeam.Add(CreatePlayer());
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    public void RpcPressedTerrorist(NetworkConnection clientConnection = null)
-    {
-        terroristTeam.Add(CreatePlayer(clientConnection, terroristSpawn.SpawnPosition()));
-    }
-
-    public void OnPressedAntiTerrorist()
-    {
-        HideTeamMenu();
-        RpcPressedAntiTerrorist(LocalConnection);
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    public void RpcPressedAntiTerrorist(NetworkConnection clientConnection = null)
-    {
-        antiterroristTeam.Add(CreatePlayer(clientConnection, antiterroristSpawn.SpawnPosition()));
-    }
-
-    private GameObject CreatePlayer(NetworkConnection conn, Vector3 spawn)
-    {
-        GameObject player = Instantiate(prefabPlayer, spawn, Quaternion.identity);
-        InstanceFinder.ServerManager.Spawn(player, conn);
-        
-        return player;
-    }
 
     private void HideTeamMenu()
     {
         teamMenu.SetActive(false);
     }
 
+    #region Ui Interraction
 
-    private void TerroristNumberChange(int oldValue, int newValue, bool isServer)
+    //Button
+    public void OnPressedTerrorist()
     {
-        terroristNumberText.text = newValue.ToString();
+        HideTeamMenu();
+        staticSpawnTerrorist?.Invoke(LocalConnection);
     }
 
-
-    private void AntiterroristNumberChange(int oldValue, int newValue, bool isServer)
+    public void OnPressedAntiTerrorist()
     {
-        antiterroristNumberText.text = newValue.ToString();
+        HideTeamMenu();
+        staticSpawnAntiTerrorist?.Invoke(LocalConnection);
     }
+
+    //Text Update
+    private void UpdateTextTerroristNumber(string number)
+    {
+        terroristNumberText.text = number;
+    }
+
+    private void UpdateTextAntiTerroristNumber(string number)
+    {
+        antiterroristNumberText.text = number;
+    }
+
+    #endregion
 }

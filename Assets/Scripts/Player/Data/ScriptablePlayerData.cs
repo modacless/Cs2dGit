@@ -36,6 +36,9 @@ public class ScriptablePlayerData : ScriptableObject
 
     public KeyCode lockUnlockCamera;
 
+    //Menu
+    public KeyCode openCloseMenu;
+
     //Weapon
     public KeyCode reloadKey;
     [Range(0, 3)]
